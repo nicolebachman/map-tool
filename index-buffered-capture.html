@@ -406,6 +406,32 @@
         color: #e2e8f0;
       }
 
+      .export-download-toast {
+        position: fixed;
+        top: 18px;
+        right: 18px;
+        z-index: 9;
+        width: min(320px, calc(100vw - 28px));
+        padding: 12px 14px;
+        border-radius: 16px;
+        background: rgba(15, 23, 42, 0.92);
+        color: #f8fafc;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 16px 36px rgba(15, 23, 42, 0.28);
+        backdrop-filter: blur(16px);
+      }
+
+      .export-download-toast[hidden] {
+        display: none !important;
+      }
+
+      .export-download-toast-text {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.45;
+        color: #e2e8f0;
+      }
+
       .confirm-danger {
         background: rgba(220, 38, 38, 0.92) !important;
         border-color: rgba(220, 38, 38, 0.28) !important;
@@ -2023,6 +2049,9 @@
           <span id="interaction-helper-title" class="interaction-helper-title">Tool Help</span>
           <p id="interaction-helper-text" class="interaction-helper-text"></p>
         </div>
+        <div id="export-download-toast" class="export-download-toast" hidden>
+          <p id="export-download-toast-text" class="export-download-toast-text">Make sure you allow multiple files to download in your browser.</p>
+        </div>
         <div id="confirm-overlay" class="confirm-overlay" hidden>
           <div class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-message">
             <h2 id="confirm-title" class="confirm-title">Are you sure?</h2>
@@ -2425,7 +2454,7 @@
                                 <span class="style-swatch-title">Buildings</span>
                                 <label class="color-wrap">
                                   <span>Building fill color</span>
-                                  <input id="building-color" type="color" value="#ded7d3" />
+                                  <input id="building-color" type="color" value="#ededed" />
                                 </label>
                               </div>
                             </div>
@@ -2629,7 +2658,7 @@
         landcover: "#dfe9d0",
         naturalLandcover: "#bee8b5",
         park: "#b8ebad",
-        buildings: "#ded7d3",
+        buildings: "#ededed",
         streets: "#fcfaf7",
         minorStreets: "#ebebeb",
         streetOutline: "#ebebeb",
@@ -2674,6 +2703,8 @@
       const interactionHelperEl = document.getElementById("interaction-helper");
       const interactionHelperTitleEl = document.getElementById("interaction-helper-title");
       const interactionHelperTextEl = document.getElementById("interaction-helper-text");
+      const exportDownloadToastEl = document.getElementById("export-download-toast");
+      const exportDownloadToastTextEl = document.getElementById("export-download-toast-text");
       const placeMarkerChipEls = Array.from(document.querySelectorAll(".place-marker-chip"));
       const panelScrollEl = document.getElementById("panel-scroll");
       const panelToggleEl = document.getElementById("panel-toggle");
@@ -3296,6 +3327,7 @@
       let currentImportRevision = 0;
       let confirmActionState = null;
       let interactionHelperTimeoutId = 0;
+      let exportDownloadToastTimeoutId = 0;
 
       toggleStateNamesBtn.checked = stateNamesVisible;
       if (frozenShieldScaleEl) {
@@ -5919,6 +5951,19 @@
         }, durationMs);
       }
 
+      function showExportDownloadToast(durationMs = 4200) {
+        if (!exportDownloadToastEl || !exportDownloadToastTextEl) return;
+        exportDownloadToastTextEl.textContent = "Make sure you allow multiple files to download in your browser.";
+        exportDownloadToastEl.hidden = false;
+        if (exportDownloadToastTimeoutId) {
+          window.clearTimeout(exportDownloadToastTimeoutId);
+        }
+        exportDownloadToastTimeoutId = window.setTimeout(() => {
+          exportDownloadToastTimeoutId = 0;
+          exportDownloadToastEl.hidden = true;
+        }, durationMs);
+      }
+
       function updateInteractionHelper() {
         if (shieldFreezeModeEnabled) {
           setInteractionHelper(
@@ -6093,6 +6138,7 @@
           readProjectPayload(),
           `printed file import version - ${projectFilenameBase()}.json`,
         );
+        showExportDownloadToast();
         setTimeout(() => URL.revokeObjectURL(url), 5000);
         localStorage.setItem(PDF_QUALITY_KEY, String(scale));
         setPrintExportStatus(
@@ -11011,6 +11057,7 @@
       function downloadProjectExport() {
         const payload = readProjectPayload();
         downloadJsonFile(payload, `${projectFilenameBase()}-project.json`);
+        showExportDownloadToast();
         setStatus(`Exported project with ${savedHighlights.length} saved highlight${savedHighlights.length === 1 ? "" : "s"}, ${frozenShields.length} frozen shield${frozenShields.length === 1 ? "" : "s"}, and ${frozenPlaces.length} frozen place${frozenPlaces.length === 1 ? "" : "s"}.`);
       }
 
