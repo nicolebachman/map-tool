@@ -439,13 +439,6 @@
         box-shadow: none !important;
       }
 
-      .print-quality-row {
-        display: grid;
-        gap: 6px;
-        font-size: 12px;
-        color: #475569;
-      }
-
       .eyebrow {
         margin: 0 0 6px;
         text-transform: none;
@@ -2411,6 +2404,10 @@
                           <input id="toggle-poi" type="checkbox" />
                           <span>Show POI</span>
                         </label>
+                        <label class="toggle-check">
+                          <input id="toggle-train-stops" type="checkbox" />
+                          <span>Show train stops</span>
+                        </label>
                       </div>
                       <details id="frozen-poi-tools" class="basemap-subgroup frozen-tools-panel">
                         <summary><span class="frozen-summary"><span>Frozen POIs</span><span id="frozen-pois-summary-count" class="frozen-summary-count" hidden></span></span></summary>
@@ -2575,15 +2572,7 @@
                 </div>
                 <div class="print-summary">
                   <button id="refresh-print" type="button" class="secondary">Refresh preview</button>
-                  <button id="back-to-editor" type="button" class="secondary">Back to editor</button>
-                  <label class="print-quality-row">
-                    PDF quality
-                    <select id="print-quality">
-                      <option value="1">1x - Fast</option>
-                      <option value="2">2x - High Quality</option>
-                      <option value="4">4x - Ultra HQ</option>
-                    </select>
-                  </label>
+                  <button id="export-png" type="button">Export PNG</button>
                   <button id="export-pdf" type="button">Export PDF</button>
                   <div id="print-export-status" class="print-export-status"></div>
                 </div>
@@ -2641,7 +2630,6 @@
       const CAPTURED_ROUTE_REF_KEY = `${STORE_KEY}:capturedRouteRef`;
       const SAVED_HIGHLIGHTS_KEY = `${STORE_KEY}:savedHighlights`;
       const BASEMAP_SHADES_KEY = `${STORE_KEY}:basemapShades`;
-      const PDF_QUALITY_KEY = `${STORE_KEY}:pdfQuality`;
       const STYLE_PRESETS = {
         grey: {
           label: "Simple Grey",
@@ -2727,9 +2715,8 @@
       const highwayHighlightsToolsEl = document.getElementById("highway-highlights-tools");
       const printPreviewImageEl = document.getElementById("print-preview-image");
       const refreshPrintBtn = document.getElementById("refresh-print");
-      const backToEditorBtn = document.getElementById("back-to-editor");
+      const exportPngBtn = document.getElementById("export-png");
       const exportPdfBtn = document.getElementById("export-pdf");
-      const printQualityEl = document.getElementById("print-quality");
       const printExportStatusEl = document.getElementById("print-export-status");
       const exportProjectBtn = document.getElementById("export-project");
       const importProjectBtn = document.getElementById("import-project");
@@ -2756,6 +2743,7 @@
       const poiToolsEl = document.getElementById("poi-tools");
       const frozenPoiToolsEl = document.getElementById("frozen-poi-tools");
       const togglePoiBtn = document.getElementById("toggle-poi");
+      const toggleTrainStopsBtn = document.getElementById("toggle-train-stops");
       const distanceMeasureModeBtn = document.getElementById("distance-measure-mode");
       const clearDistanceMeasureBtn = document.getElementById("clear-distance-measure");
       const distanceResultEl = document.getElementById("distance-result");
@@ -2828,6 +2816,7 @@
       const MINOR_STREETS_HIDDEN_KEY = `${STORE_KEY}:minorStreetsHidden`;
       const BUILDINGS_HIDDEN_KEY = `${STORE_KEY}:buildingsHidden`;
       const POI_HIDDEN_KEY = `${STORE_KEY}:poiHidden`;
+      const TRAIN_STOPS_VISIBLE_KEY = `${STORE_KEY}:trainStopsVisible`;
       const TRAIN_MAP_VISIBLE_KEY = `${STORE_KEY}:trainMapVisible`;
       const TRAIN_MAP_MODE_KEY = `${STORE_KEY}:trainMapMode`;
       const TRAIN_LINE_COLOR_KEY = `${STORE_KEY}:trainLineColor`;
@@ -3175,7 +3164,6 @@
       }
       frozenPoiSizeEl.value = localStorage.getItem(FROZEN_POI_SIZE_KEY) || String(FROZEN_POI_STYLE_DEFAULTS.size);
       strokeWeightEl.value = localStorage.getItem(`${STORE_KEY}:strokeWeight`) || "1";
-      printQualityEl.value = localStorage.getItem(PDF_QUALITY_KEY) || "2";
 
       let map = null;
       let capturedRoute = null;
@@ -3250,6 +3238,7 @@
       saveStreetVisibilityState();
       let buildingsVisible = localStorage.getItem(BUILDINGS_HIDDEN_KEY) !== "true";
       let poiVisible = localStorage.getItem(POI_HIDDEN_KEY) !== "true";
+      let trainStopsVisible = localStorage.getItem(TRAIN_STOPS_VISIBLE_KEY) !== "false";
       let trainMapVisible = localStorage.getItem(TRAIN_MAP_VISIBLE_KEY) === "true";
       let trainMapMode = localStorage.getItem(TRAIN_MAP_MODE_KEY) === "lines" ? "lines" : "stops";
       localStorage.setItem(TRAIN_MAP_MODE_KEY, trainMapMode);
@@ -5339,6 +5328,7 @@
           localStreetsVisible,
           buildingsVisible,
           poiVisible,
+          trainStopsVisible,
           trainMapVisible,
           trainMapMode,
           powerLinesVisible,
@@ -5360,6 +5350,7 @@
       function persistProjectVisibilityState() {
         localStorage.setItem(BUILDINGS_HIDDEN_KEY, String(!buildingsVisible));
         localStorage.setItem(POI_HIDDEN_KEY, String(!poiVisible));
+        localStorage.setItem(TRAIN_STOPS_VISIBLE_KEY, String(trainStopsVisible));
         localStorage.setItem(TRAIN_MAP_VISIBLE_KEY, String(trainMapVisible));
         localStorage.setItem(TRAIN_MAP_MODE_KEY, trainMapMode);
         localStorage.setItem(POWER_LINES_VISIBLE_KEY, String(powerLinesVisible));
@@ -5689,6 +5680,16 @@
         return map.getCanvas().toDataURL("image/png");
       }
 
+      function downloadDataUrlFile(dataUrl, filename) {
+        if (!dataUrl) return;
+        const link = document.createElement("a");
+        link.href = dataUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      }
+
       function dataUrlToBytes(dataUrl) {
         const base64 = dataUrl.split(",")[1] || "";
         const binary = atob(base64);
@@ -5820,7 +5821,58 @@
         return { width: canvas.width, height: canvas.height, bytes: rgb };
       }
 
-      async function captureHighQualityMapImage(scale = 2) {
+      function getLetterPdfTargetDimensions() {
+        const canvas = map?.getCanvas?.();
+        const viewportAspect = canvas ? (canvas.width / Math.max(1, canvas.height)) : 1;
+        const isLandscape = viewportAspect >= 1;
+        return isLandscape
+          ? {
+              pageWidth: 792,
+              pageHeight: 612,
+              imageWidth: 3300,
+              imageHeight: 2550,
+            }
+          : {
+              pageWidth: 612,
+              pageHeight: 792,
+              imageWidth: 2550,
+              imageHeight: 3300,
+            };
+      }
+
+      function captureCurrentViewportPdfImage() {
+        if (!map || !map.isStyleLoaded()) {
+          throw new Error("Map is not ready.");
+        }
+        const canvas = map.getCanvas();
+        const pageWidth = Math.max(1, Math.round(canvas.width));
+        const pageHeight = Math.max(1, Math.round(canvas.height));
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
+        return {
+          dataUrl,
+          pageWidth,
+          pageHeight,
+          imageWidth: pageWidth,
+          imageHeight: pageHeight,
+          imageBytes: dataUrlToBytes(dataUrl),
+          imageFilter: "/DCTDecode",
+        };
+      }
+
+      function captureCurrentViewportPngImage() {
+        if (!map || !map.isStyleLoaded()) {
+          throw new Error("Map is not ready.");
+        }
+        return {
+          dataUrl: getViewportImageDataUrl(),
+        };
+      }
+
+      async function captureHighQualityMapImage({
+        exportWidth,
+        exportHeight,
+        zoomScale = 2,
+      } = {}) {
         if (!map || !map.isStyleLoaded()) {
           throw new Error("Map is not ready.");
         }
@@ -5828,14 +5880,14 @@
         const canvas = map.getCanvas();
         const baseWidth = Math.max(1, Math.round(canvas.width));
         const baseHeight = Math.max(1, Math.round(canvas.height));
-        const exportWidth = Math.max(1, Math.round(baseWidth * scale));
-        const exportHeight = Math.max(1, Math.round(baseHeight * scale));
+        const targetWidth = Math.max(1, Math.round(exportWidth || (baseWidth * 2)));
+        const targetHeight = Math.max(1, Math.round(exportHeight || (baseHeight * 2)));
         const container = document.createElement("div");
         container.style.position = "fixed";
         container.style.left = "-10000px";
         container.style.top = "0";
-        container.style.width = `${exportWidth}px`;
-        container.style.height = `${exportHeight}px`;
+        container.style.width = `${targetWidth}px`;
+        container.style.height = `${targetHeight}px`;
         container.style.pointerEvents = "none";
         document.body.appendChild(container);
 
@@ -5844,7 +5896,7 @@
           container,
           style,
           center: map.getCenter(),
-          zoom: map.getZoom() + Math.log2(scale),
+          zoom: map.getZoom() + Math.log2(Math.max(1, Number(zoomScale) || 1)),
           bearing: 0,
           pitch: 0,
           antialias: true,
@@ -5852,38 +5904,39 @@
           interactive: false,
         });
 
-        await new Promise((resolve, reject) => {
-          let settled = false;
-          const done = () => {
-            if (settled) return;
-            settled = true;
-            resolve();
-          };
-          const fail = (event) => {
-            if (settled) return;
-            settled = true;
-            reject(event?.error || new Error("High quality render failed."));
-          };
-          exportMap.once("idle", done);
-          exportMap.once("error", fail);
-          setTimeout(() => done(), 6000);
-        });
+        try {
+          await new Promise((resolve, reject) => {
+            let settled = false;
+            const done = () => {
+              if (settled) return;
+              settled = true;
+              resolve();
+            };
+            const fail = (event) => {
+              if (settled) return;
+              settled = true;
+              reject(event?.error || new Error("High quality render failed."));
+            };
+            exportMap.once("idle", done);
+            exportMap.once("error", fail);
+            setTimeout(() => done(), 12000);
+          });
 
-        const exportCanvas = exportMap.getCanvas();
-        const exportDataUrl = exportCanvas.toDataURL("image/png");
-        const raw = await dataUrlToRawRgbBytes(exportDataUrl);
-        const result = {
-          dataUrl: exportDataUrl,
-          pageWidth: baseWidth,
-          pageHeight: baseHeight,
-          imageWidth: raw.width,
-          imageHeight: raw.height,
-          rawRgbBytes: raw.bytes,
-        };
-
-        exportMap.remove();
-        container.remove();
-        return result;
+          const exportCanvas = exportMap.getCanvas();
+          const exportDataUrl = exportCanvas.toDataURL("image/png");
+          const raw = await dataUrlToRawRgbBytes(exportDataUrl);
+          return {
+            dataUrl: exportDataUrl,
+            pageWidth: baseWidth,
+            pageHeight: baseHeight,
+            imageWidth: raw.width,
+            imageHeight: raw.height,
+            rawRgbBytes: raw.bytes,
+          };
+        } finally {
+          try { exportMap.remove(); } catch {}
+          try { container.remove(); } catch {}
+        }
       }
 
       function updatePrintPreview() {
@@ -6129,7 +6182,7 @@
         syncHighwayHighlightModeToDropdown();
       }
 
-      async function exportPrintPdf(scale = Number(printQualityEl?.value || 1)) {
+      async function exportPrintPdf(scale = 2) {
         if (!map || !map.isStyleLoaded()) {
           setPrintExportStatus("Load the map before exporting a PDF.", true);
           return;
@@ -6142,11 +6195,33 @@
         let imageHeight;
         let imageBytes;
         let imageFilter;
+        let usedLetter300Ppi = false;
+        let usedViewportFallback = false;
 
         try {
-          if (scale > 1) {
-            setPrintExportStatus("Generating a high quality PDF...");
-            const exportResult = await captureHighQualityMapImage(scale);
+          const letterTarget = getLetterPdfTargetDimensions();
+          const canvas = map.getCanvas();
+          const scaleX = letterTarget.imageWidth / Math.max(1, canvas.width);
+          const scaleY = letterTarget.imageHeight / Math.max(1, canvas.height);
+          setPrintExportStatus("Generating a Letter 300 PPI PDF...");
+          const exportResult = await captureHighQualityMapImage({
+            exportWidth: letterTarget.imageWidth,
+            exportHeight: letterTarget.imageHeight,
+            zoomScale: Math.min(scaleX, scaleY),
+          });
+          dataUrl = exportResult.dataUrl;
+          pageWidth = letterTarget.pageWidth;
+          pageHeight = letterTarget.pageHeight;
+          imageWidth = letterTarget.imageWidth;
+          imageHeight = letterTarget.imageHeight;
+          imageBytes = exportResult.rawRgbBytes;
+          imageFilter = "";
+          usedLetter300Ppi = true;
+        } catch (error) {
+          console.warn("Letter 300 PPI PDF export failed.", error);
+          try {
+            setPrintExportStatus("Letter 300 PPI failed. Falling back to 2x high quality...");
+            const exportResult = await captureHighQualityMapImage({ zoomScale: scale });
             dataUrl = exportResult.dataUrl;
             pageWidth = exportResult.pageWidth;
             pageHeight = exportResult.pageHeight;
@@ -6154,20 +6229,27 @@
             imageHeight = exportResult.imageHeight;
             imageBytes = exportResult.rawRgbBytes;
             imageFilter = "";
-          } else {
-            const canvas = map.getCanvas();
-            pageWidth = Math.max(1, Math.round(canvas.width));
-            pageHeight = Math.max(1, Math.round(canvas.height));
-            imageWidth = pageWidth;
-            imageHeight = pageHeight;
-            dataUrl = canvas.toDataURL("image/jpeg", 0.92);
-            imageBytes = dataUrlToBytes(dataUrl);
-            imageFilter = "/DCTDecode";
+            usedLetter300Ppi = false;
+          } catch (fallbackError) {
+            console.warn("2x high quality PDF export fallback failed.", fallbackError);
+            try {
+              setPrintExportStatus("2x high quality failed. Falling back to the current viewport...");
+              const exportResult = captureCurrentViewportPdfImage();
+              dataUrl = exportResult.dataUrl;
+              pageWidth = exportResult.pageWidth;
+              pageHeight = exportResult.pageHeight;
+              imageWidth = exportResult.imageWidth;
+              imageHeight = exportResult.imageHeight;
+              imageBytes = exportResult.imageBytes;
+              imageFilter = exportResult.imageFilter;
+              usedLetter300Ppi = false;
+              usedViewportFallback = true;
+            } catch (viewportError) {
+              console.warn("Viewport PDF export fallback failed.", viewportError);
+              setPrintExportStatus("PDF export failed.", true);
+              return;
+            }
           }
-        } catch (error) {
-          console.warn("HQ PDF export failed, falling back to normal export.", error);
-          setPrintExportStatus("High quality export failed, falling back to the normal PDF.", true);
-          return exportPrintPdf(1);
         }
 
         const title = `${highwayEl.value.trim() || "Route"} map`;
@@ -6194,11 +6276,56 @@
         );
         showExportDownloadToast();
         setTimeout(() => URL.revokeObjectURL(url), 5000);
-        localStorage.setItem(PDF_QUALITY_KEY, String(scale));
         setPrintExportStatus(
-          scale > 1
-            ? "Downloaded a high-quality map-only PDF and matching import JSON."
-            : "Downloaded a map-only PDF and matching import JSON at the current viewport size."
+          usedLetter300Ppi
+            ? "Downloaded a Letter 300 PPI map-only PDF and matching import JSON."
+            : usedViewportFallback
+              ? "Downloaded a viewport-sized map-only PDF and matching import JSON."
+              : "Downloaded a 2x high-quality map-only PDF and matching import JSON."
+        );
+      }
+
+      async function exportPrintPng(scale = 2) {
+        if (!map || !map.isStyleLoaded()) {
+          setPrintExportStatus("Load the map before exporting a PNG.", true);
+          return;
+        }
+
+        let dataUrl = "";
+        let usedViewportFallback = false;
+
+        try {
+          const letterTarget = getLetterPdfTargetDimensions();
+          const canvas = map.getCanvas();
+          const scaleX = letterTarget.imageWidth / Math.max(1, canvas.width);
+          const scaleY = letterTarget.imageHeight / Math.max(1, canvas.height);
+          setPrintExportStatus("Generating a high-quality PNG...");
+          const exportResult = await captureHighQualityMapImage({
+            exportWidth: letterTarget.imageWidth,
+            exportHeight: letterTarget.imageHeight,
+            zoomScale: Math.min(scaleX, scaleY),
+          });
+          dataUrl = exportResult.dataUrl;
+        } catch (error) {
+          console.warn("High-quality PNG export failed.", error);
+          try {
+            setPrintExportStatus("High-quality PNG failed. Falling back to the current viewport...");
+            const exportResult = captureCurrentViewportPngImage();
+            dataUrl = exportResult.dataUrl;
+            usedViewportFallback = true;
+          } catch (viewportError) {
+            console.warn("Viewport PNG export fallback failed.", viewportError);
+            setPrintExportStatus("PNG export failed.", true);
+            return;
+          }
+        }
+
+        const filename = `${(highwayEl.value.trim() || "route").replace(/[^a-z0-9]+/gi, "-").replace(/^-+|-+$/g, "") || "route"}-map.png`;
+        downloadDataUrlFile(dataUrl, filename);
+        setPrintExportStatus(
+          usedViewportFallback
+            ? "Downloaded a viewport-sized PNG."
+            : "Downloaded a high-quality PNG."
         );
       }
 
@@ -6327,6 +6454,7 @@
         toggleStreetLabelsBtn.checked = streetLabelsVisible;
         if (toggleBuildingsBtn) toggleBuildingsBtn.checked = buildingsVisible;
         togglePoiBtn.checked = poiVisible;
+        if (toggleTrainStopsBtn) toggleTrainStopsBtn.checked = trainStopsVisible;
         toggleTrainMapBtn.checked = trainMapVisible;
         togglePowerLinesBtn.checked = powerLinesVisible;
         toggleRouteMarkersBtn.checked = routeMarkersVisible;
@@ -6341,6 +6469,7 @@
         toggleStreetLabelsBtn.closest(".toggle-check")?.classList.toggle("active", streetLabelsVisible);
         toggleBuildingsBtn?.closest(".toggle-check")?.classList.toggle("active", buildingsVisible);
         togglePoiBtn.closest(".toggle-check")?.classList.toggle("active", poiVisible);
+        toggleTrainStopsBtn?.closest(".toggle-check")?.classList.toggle("active", trainStopsVisible);
         togglePowerLinesBtn.closest(".toggle-check")?.classList.toggle("active", powerLinesVisible);
         toggleRouteMarkersBtn.closest(".toggle-check")?.classList.toggle("active", routeMarkersVisible);
         toggleHighwayMajorBtn?.closest(".toggle-check")?.classList.toggle("active", majorHighwaysVisible);
@@ -7129,6 +7258,11 @@
         return setPoiLayerHiddenByIds(poiLayerIds, !poiVisible);
       }
 
+      function applyTrainStopsVisibility() {
+        if (!map || !map.isStyleLoaded()) return 0;
+        return setPoiLayerHiddenByIds(TRAIN_MAP_STOP_LAYER_IDS, !trainStopsVisible);
+      }
+
       function debugPoiLayers() {
         if (!map || !map.isStyleLoaded()) {
           console.warn("Map style is not loaded yet.");
@@ -7170,7 +7304,7 @@
       window.debugPoiLayers = debugPoiLayers;
 
       function applyTrainMapVisibility() {
-        const stopCount = setLayerVisibilityByIds(TRAIN_MAP_STOP_LAYER_IDS, !trainMapVisible);
+        const stopCount = applyTrainStopsVisibility();
         const lineCount = setLayerVisibilityByIds(
           [...TRAIN_MAP_LINE_LAYER_IDS, ...TRAIN_MAP_LINE_OUTLINE_LAYER_IDS],
           !(trainMapVisible && trainMapMode === "lines"),
@@ -7552,6 +7686,7 @@
         }
         setLayerVisibilityByIds(BUILDING_LAYER_IDS, !buildingsVisible);
         applyPoiVisibility();
+        applyTrainStopsVisibility();
         applyRouteMarkerVisibility();
         applyPlaceNameVisibility();
         applyTrainMapVisibility();
@@ -7560,6 +7695,7 @@
       function applyPoiToggleOnly() {
         if (!map || !map.isStyleLoaded()) return;
         applyPoiVisibility();
+        applyTrainStopsVisibility();
         if (trainMapVisible) {
           applyTrainMapVisibility();
         }
@@ -11003,6 +11139,7 @@
         saveStreetVisibilityState();
         buildingsVisible = readProjectBoolean(visibility.buildingsVisible, buildingsVisible);
         poiVisible = readProjectBoolean(visibility.poiVisible, poiVisible);
+        trainStopsVisible = readProjectBoolean(visibility.trainStopsVisible, trainStopsVisible);
         trainMapVisible = readProjectBoolean(visibility.trainMapVisible, trainMapVisible);
         trainMapMode = visibility.trainMapMode === "lines" ? "lines" : "stops";
         powerLinesVisible = readProjectBoolean(visibility.powerLinesVisible, powerLinesVisible);
@@ -12344,8 +12481,8 @@
       panelTabEditorEl.addEventListener("click", () => setPanelTab("editor"));
       panelTabPrintEl.addEventListener("click", () => setPanelTab("print"));
       refreshPrintBtn.addEventListener("click", updatePrintPreview);
+      exportPngBtn.addEventListener("click", exportPrintPng);
       exportPdfBtn.addEventListener("click", exportPrintPdf);
-      backToEditorBtn.addEventListener("click", () => setPanelTab("editor"));
       async function runHighwayEnterFlow() {
         const styleReady = await waitForMapStyleReady(3200);
         if (!styleReady || !map?.isStyleLoaded?.()) return;
@@ -12452,6 +12589,12 @@
       togglePoiBtn.addEventListener("change", () => {
         poiVisible = togglePoiBtn.checked;
         localStorage.setItem(POI_HIDDEN_KEY, String(!poiVisible));
+        updateVisibilityButtons();
+        applyPoiToggleOnly();
+      });
+      toggleTrainStopsBtn?.addEventListener("change", () => {
+        trainStopsVisible = toggleTrainStopsBtn.checked;
+        localStorage.setItem(TRAIN_STOPS_VISIBLE_KEY, String(trainStopsVisible));
         updateVisibilityButtons();
         applyPoiToggleOnly();
       });
