@@ -1387,13 +1387,11 @@
         box-shadow: 0 10px 24px rgba(234, 179, 8, 0.18);
       }
 
-      .capture-route-action.active:disabled[data-disabled-hint]:hover::after {
-        content: attr(data-disabled-hint);
-        position: absolute;
+      .capture-button-tooltip {
+        position: fixed;
         left: 50%;
-        top: calc(100% + 10px);
+        top: 0;
         transform: translateX(-50%);
-        width: max-content;
         max-width: min(240px, calc(100vw - 32px));
         padding: 8px 10px;
         border-radius: 10px;
@@ -1406,6 +1404,10 @@
         box-shadow: 0 12px 28px rgba(15, 23, 42, 0.28);
         pointer-events: none;
         z-index: 12;
+      }
+
+      .capture-button-tooltip[hidden] {
+        display: none !important;
       }
 
       .save-highlight-action {
@@ -2045,6 +2047,7 @@
           <button id="erase" type="button" class="secondary capture-fab">Erase box</button>
           <button id="save-highlight" type="button" class="capture-fab save-highlight-action">Save highlight</button>
         </div>
+        <div id="capture-button-tooltip" class="capture-button-tooltip" hidden></div>
         <div id="interaction-helper" class="interaction-helper" hidden>
           <span id="interaction-helper-title" class="interaction-helper-title">Tool Help</span>
           <p id="interaction-helper-text" class="interaction-helper-text"></p>
@@ -2700,6 +2703,7 @@
       const basemapGroupEls = Array.from(document.querySelectorAll(".basemap-accordion > details.basemap-group"));
       const panelEl = document.querySelector(".panel");
       const highlightToolbarEl = document.getElementById("highlight-toolbar");
+      const captureButtonTooltipEl = document.getElementById("capture-button-tooltip");
       const interactionHelperEl = document.getElementById("interaction-helper");
       const interactionHelperTitleEl = document.getElementById("interaction-helper-title");
       const interactionHelperTextEl = document.getElementById("interaction-helper-text");
@@ -3324,6 +3328,7 @@
       let pendingProjectViewport = null;
       let pendingImportedHighlightCommit = false;
       let pendingStylePresetHighlightCommit = false;
+      let captureButtonTooltipHovered = false;
       let currentImportRevision = 0;
       let confirmActionState = null;
       let interactionHelperTimeoutId = 0;
@@ -5502,16 +5507,14 @@
         if (!map) return null;
         const center = map.getCenter?.();
         const zoom = Number(map.getZoom?.());
-        const bearing = Number(map.getBearing?.());
-        const pitch = Number(map.getPitch?.());
         if (!center || !Number.isFinite(center.lng) || !Number.isFinite(center.lat) || !Number.isFinite(zoom)) {
           return null;
         }
         return {
           center: [center.lng, center.lat],
           zoom,
-          bearing: Number.isFinite(bearing) ? bearing : 0,
-          pitch: Number.isFinite(pitch) ? pitch : 0,
+          bearing: 0,
+          pitch: 0,
         };
       }
 
@@ -5521,17 +5524,32 @@
         const lng = Number(center[0]);
         const lat = Number(center[1]);
         const zoom = Number(viewport.zoom);
-        const bearing = Number(viewport.bearing);
-        const pitch = Number(viewport.pitch);
         if (!Number.isFinite(lng) || !Number.isFinite(lat) || !Number.isFinite(zoom)) {
           return null;
         }
         return {
           center: [lng, lat],
           zoom,
-          bearing: Number.isFinite(bearing) ? bearing : 0,
-          pitch: Number.isFinite(pitch) ? pitch : 0,
+          bearing: 0,
+          pitch: 0,
         };
+      }
+
+      function lockMapOrientation() {
+        if (!map) return;
+        try {
+          map.dragRotate?.disable?.();
+          map.touchZoomRotate?.disableRotation?.();
+          map.touchPitch?.disable?.();
+          if (typeof map.getPitch === "function" && Math.abs(Number(map.getPitch()) || 0) > 0.001) {
+            map.setPitch(0);
+          }
+          if (typeof map.getBearing === "function" && Math.abs(Number(map.getBearing()) || 0) > 0.001) {
+            map.setBearing(0);
+          }
+        } catch (error) {
+          console.warn("Unable to fully lock map orientation.", error);
+        }
       }
 
       function readImportedProjectViewport(project) {
@@ -5584,10 +5602,12 @@
             duration: 0,
             maxZoom: 13,
           });
+          lockMapOrientation();
           return true;
         }
         if (viewport.kind === "camera" && viewport.camera) {
           map.jumpTo(viewport.camera);
+          lockMapOrientation();
           return true;
         }
         return false;
@@ -5825,8 +5845,8 @@
           style,
           center: map.getCenter(),
           zoom: map.getZoom() + Math.log2(scale),
-          bearing: map.getBearing(),
-          pitch: map.getPitch(),
+          bearing: 0,
+          pitch: 0,
           antialias: true,
           preserveDrawingBuffer: true,
           interactive: false,
@@ -5914,6 +5934,40 @@
           highlightToolbarEl.hidden = !highlightModeEnabled;
         }
         updateHighlightToolbarPosition();
+        syncCaptureButtonTooltip();
+      }
+
+      function hideCaptureButtonTooltip() {
+        captureButtonTooltipHovered = false;
+        if (captureButtonTooltipEl) {
+          captureButtonTooltipEl.hidden = true;
+          captureButtonTooltipEl.textContent = "";
+        }
+      }
+
+      function shouldShowCaptureButtonTooltip() {
+        return Boolean(
+          captureButtonTooltipHovered &&
+          highlightModeEnabled &&
+          highlightToolbarEl &&
+          !highlightToolbarEl.hidden &&
+          captureBtn &&
+          captureBtn.disabled &&
+          captureBtn.dataset.disabledHint
+        );
+      }
+
+      function syncCaptureButtonTooltip() {
+        if (!captureButtonTooltipEl) return;
+        if (!shouldShowCaptureButtonTooltip()) {
+          captureButtonTooltipEl.hidden = true;
+          return;
+        }
+        const rect = captureBtn.getBoundingClientRect();
+        captureButtonTooltipEl.textContent = captureBtn.dataset.disabledHint;
+        captureButtonTooltipEl.style.left = `${rect.left + (rect.width / 2)}px`;
+        captureButtonTooltipEl.style.top = `${rect.bottom + 10}px`;
+        captureButtonTooltipEl.hidden = false;
       }
 
       function setInteractionHelper(title = "", text = "") {
@@ -11145,23 +11199,29 @@
         if (!captureBtn) return;
         const hasCommittedSelection = hasCommittedHighlightSelection();
         const hasCapturedCurrentRef = Boolean(currentCapturedRouteMatches(highwayEl.value.trim()));
-        captureBtn.disabled = !hasCommittedSelection || !map;
-        captureBtn.classList.toggle("active", hasCommittedSelection);
+        const isZoomedInForCaptureMore = Boolean(map) && Number(map.getZoom?.()) >= 10.99;
+        const canCaptureFreshRoute = hasCommittedSelection && !hasCapturedCurrentRef;
+        const canCaptureMore = hasCommittedSelection && hasCapturedCurrentRef && captureRouteNeedsRecapture && isZoomedInForCaptureMore;
+        captureBtn.disabled = !map || (!canCaptureFreshRoute && !canCaptureMore);
+        captureBtn.classList.toggle("active", canCaptureFreshRoute || canCaptureMore);
         captureBtn.classList.toggle(
           "capture-route-attention",
           hasCommittedSelection && hasCapturedCurrentRef && captureRouteNeedsRecapture
         );
-        captureBtn.textContent = hasCommittedSelection && hasCapturedCurrentRef && captureRouteNeedsRecapture
+        captureBtn.textContent = canCaptureMore
           ? "Capture more"
           : "Capture route";
         if (captureBtn.disabled && hasCommittedSelection) {
-          const disabledHint = "Move around a bit to load more visible route segments, then try Capture route again.";
+          const disabledHint = hasCapturedCurrentRef
+            ? (isZoomedInForCaptureMore
+              ? "Pan around more to capture more highlights."
+              : "Zoom in to 11 or closer to capture more of this route.")
+            : "Press Enter on the highway field before capturing this route.";
           captureBtn.dataset.disabledHint = disabledHint;
-          captureBtn.title = disabledHint;
         } else {
           delete captureBtn.dataset.disabledHint;
-          captureBtn.removeAttribute("title");
         }
+        syncCaptureButtonTooltip();
         if (saveHighlightBtn) {
           saveHighlightBtn.disabled = !hasCapturedCurrentRef;
         }
@@ -11963,9 +12023,12 @@
             config: getMapStyleConfig(),
             center: MAP_CENTER,
             zoom: MAP_ZOOM,
+            bearing: 0,
+            pitch: 0,
             antialias: true,
             preserveDrawingBuffer: true,
           });
+          lockMapOrientation();
           map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
           window.__dbgMap = map;
           map.on("zoom", updateZoomBadge);
@@ -11981,6 +12044,8 @@
             }
           });
           map.on("move", updateZoomBadge);
+          map.on("rotate", lockMapOrientation);
+          map.on("pitch", lockMapOrientation);
           map.on("zoomstart", clearHoveredLiveShield);
           map.on("movestart", clearHoveredLiveShield);
           map.on("moveend", () => {
@@ -12106,6 +12171,7 @@
           });
           map.on("style.load", () => {
             window.__dbgMap = map;
+            lockMapOrientation();
             roadLineWidthDefaults = new Map();
             mapPaintDefaults = new Map();
             linePaintDefaults = new Map();
@@ -12251,6 +12317,21 @@
         updateCaptureRouteUi();
       }
       captureBtn.addEventListener("click", captureRoute);
+      highlightToolbarEl?.addEventListener("mousemove", (event) => {
+        if (!captureBtn) return;
+        const rect = captureBtn.getBoundingClientRect();
+        const isOverCaptureButton = (
+          event.clientX >= rect.left &&
+          event.clientX <= rect.right &&
+          event.clientY >= rect.top &&
+          event.clientY <= rect.bottom
+        );
+        if (captureButtonTooltipHovered !== isOverCaptureButton) {
+          captureButtonTooltipHovered = isOverCaptureButton;
+        }
+        syncCaptureButtonTooltip();
+      });
+      highlightToolbarEl?.addEventListener("mouseleave", hideCaptureButtonTooltip);
       saveHighlightBtn.addEventListener("click", saveCurrentHighlight);
       eraseBtn.addEventListener("click", () => setEraseMode(!eraseMode));
       clearAllBtn.addEventListener("click", () => {
