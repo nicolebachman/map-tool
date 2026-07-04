@@ -324,6 +324,52 @@
         justify-content: flex-end;
       }
 
+      .import-highlight-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 34;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(15, 23, 42, 0.44);
+        backdrop-filter: blur(8px);
+      }
+
+      .import-highlight-overlay[hidden] {
+        display: none !important;
+      }
+
+      .import-highlight-dialog {
+        width: min(460px, calc(100vw - 32px));
+        display: grid;
+        gap: 14px;
+        padding: 22px;
+        border-radius: 22px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: rgba(255, 255, 255, 0.98);
+        box-shadow: 0 28px 80px rgba(15, 23, 42, 0.24);
+      }
+
+      .import-highlight-title {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: #0f172a;
+      }
+
+      .import-highlight-message {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.5;
+        color: #475569;
+      }
+
+      .import-highlight-actions {
+        display: flex;
+        justify-content: flex-end;
+      }
+
       .interaction-helper {
         position: fixed;
         left: 50%;
@@ -632,6 +678,40 @@
         background: rgba(255, 255, 255, 0.72);
       }
 
+      .basemap-group.is-disabled {
+        opacity: 0.58;
+      }
+
+      .basemap-group.is-disabled > summary {
+        cursor: not-allowed;
+        color: #64748b;
+      }
+
+      .basemap-group.is-disabled > summary::after {
+        color: #cbd5e1;
+      }
+
+      .basemap-group.is-disabled > .basemap-group-body {
+        display: none !important;
+      }
+
+      .basemap-subgroup.is-disabled {
+        opacity: 0.58;
+      }
+
+      .basemap-subgroup.is-disabled > summary {
+        cursor: not-allowed;
+        color: #64748b;
+      }
+
+      .basemap-subgroup.is-disabled > summary::after {
+        color: #cbd5e1;
+      }
+
+      .basemap-subgroup.is-disabled > .basemap-subgroup-body {
+        display: none !important;
+      }
+
       .basemap-group > summary::-webkit-details-marker {
         display: none;
       }
@@ -656,6 +736,30 @@
 
       .basemap-group.flattened .land-linked {
         display: none;
+      }
+
+      .land-hidden-tone {
+        display: none !important;
+      }
+
+      .land-preset-only {
+        display: none !important;
+      }
+
+      .flatten-land-only {
+        display: none !important;
+      }
+
+      .flatten-land-only.is-visible {
+        display: grid !important;
+      }
+
+      .flatten-land-only[hidden] {
+        display: none !important;
+      }
+
+      .satellite-hidden-control[hidden] {
+        display: none !important;
       }
 
       .basemap-toggle-row {
@@ -874,6 +978,10 @@
         height: 38px;
         border-radius: 0;
         justify-self: start;
+      }
+
+      #style-preset {
+        min-height: 38px;
       }
 
       #street-color,
@@ -1240,9 +1348,38 @@
       }
 
       .capture-route-action {
+        position: relative;
         padding-left: 20px;
         padding-right: 20px;
         min-width: 132px;
+      }
+
+      .capture-route-action.capture-route-attention:not(:disabled) {
+        background: rgba(254, 240, 138, 0.96) !important;
+        color: #854d0e !important;
+        border-color: rgba(234, 179, 8, 0.38) !important;
+        box-shadow: 0 10px 24px rgba(234, 179, 8, 0.18);
+      }
+
+      .capture-route-action.active:disabled[data-disabled-hint]:hover::after {
+        content: attr(data-disabled-hint);
+        position: absolute;
+        left: 50%;
+        top: calc(100% + 10px);
+        transform: translateX(-50%);
+        width: max-content;
+        max-width: min(240px, calc(100vw - 32px));
+        padding: 8px 10px;
+        border-radius: 10px;
+        background: rgba(15, 23, 42, 0.94);
+        color: #f8fafc;
+        font-size: 12px;
+        line-height: 1.35;
+        white-space: normal;
+        text-align: center;
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.28);
+        pointer-events: none;
+        z-index: 12;
       }
 
       .save-highlight-action {
@@ -1291,6 +1428,38 @@
         border-radius: 14px;
         background: rgba(241, 245, 249, 0.85);
         border: 1px solid rgba(148, 163, 184, 0.16);
+      }
+
+      .distance-result.distance-result-pulse {
+        animation: distance-result-pulse 1.2s ease-in-out 2;
+      }
+
+      @keyframes distance-result-pulse {
+        0% {
+          background: rgba(241, 245, 249, 0.85);
+          border-color: rgba(148, 163, 184, 0.16);
+          box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+        }
+        20% {
+          background: rgba(191, 219, 254, 0.95);
+          border-color: rgba(59, 130, 246, 0.5);
+          box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+        }
+        45% {
+          background: rgba(219, 234, 254, 0.92);
+          border-color: rgba(96, 165, 250, 0.32);
+          box-shadow: 0 0 0 8px rgba(59, 130, 246, 0);
+        }
+        70% {
+          background: rgba(191, 219, 254, 0.95);
+          border-color: rgba(59, 130, 246, 0.5);
+          box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+        }
+        100% {
+          background: rgba(241, 245, 249, 0.85);
+          border-color: rgba(148, 163, 184, 0.16);
+          box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+        }
       }
 
       .distance-result[hidden] {
@@ -1894,6 +2063,17 @@
             </div>
           </div>
         </div>
+        <div id="import-highlight-overlay" class="import-highlight-overlay" hidden>
+          <div class="import-highlight-dialog" role="dialog" aria-modal="true" aria-labelledby="import-highlight-title" aria-describedby="import-highlight-message">
+            <h2 id="import-highlight-title" class="import-highlight-title">Saved highlights need one more step</h2>
+            <p id="import-highlight-message" class="import-highlight-message">
+              This imported project has highway highlights in a style where they do not appear automatically. Go to Highway Highlights and press Enter on the empty Highway ref field to see the saved highlights.
+            </p>
+            <div class="import-highlight-actions">
+              <button id="import-highlight-continue" type="button" class="capture-fab">Continue</button>
+            </div>
+          </div>
+        </div>
         <section class="panel">
           <div class="panel-header">
             <div class="panel-header-top">
@@ -1937,34 +2117,42 @@
                     <summary>Land</summary>
                     <div class="basemap-group-body">
                       <div class="basemap-row land-row">
-                        <label class="color-wrap">
-                          1
+                        <label class="color-wrap" for="style-preset">
+                          Base map
+                          <select id="style-preset">
+                            <option value="streets">Mapbox Streets</option>
+                            <option value="grey">Simple grey</option>
+                            <option value="satellite">Satellite streets</option>
+                          </select>
+                        </label>
+                        <label class="color-wrap flatten-land-only" id="flatten-land-color-control" hidden>
+                          Color
                           <input id="land-color" type="color" value="#f2efe9" />
                         </label>
-                        <label class="color-wrap land-linked">
-                          2
+                        <label class="color-wrap land-hidden-tone">
+                          Landcover
                           <input id="landcover-color" type="color" value="#dfe9d0" />
                         </label>
-                        <label class="color-wrap land-linked">
-                          3
+                        <label class="color-wrap land-hidden-tone">
+                          Natural landcover
                           <input id="natural-landcover-color" type="color" value="#bee8b5" />
                         </label>
-                        <label class="color-wrap land-linked">
+                        <label class="color-wrap land-preset-only">
                           Parks
                           <input id="park-color" type="color" value="#d7ead0" />
                         </label>
-                        <label class="color-wrap">
+                        <label class="color-wrap satellite-hidden-control" id="land-water-control">
                           Water
                           <input id="water-color" type="color" value="#b3d7ff" />
                         </label>
                       </div>
-                      <div class="basemap-sync-row">
+                      <div class="basemap-sync-row" id="land-flatten-row">
                         <button id="flatten-land" type="button" class="secondary sync-button">Flatten land</button>
                       </div>
                     </div>
                   </details>
 
-                  <details class="basemap-group">
+                  <details class="basemap-group" id="street-tools">
                     <summary>Streets</summary>
                     <div class="basemap-group-body">
                       <div class="basemap-toggle-row">
@@ -1973,8 +2161,8 @@
                           <span>Primary roads</span>
                         </label>
                         <label class="toggle-check">
-                          <input id="toggle-street-local" type="checkbox" />
-                          <span>Residential/local</span>
+                          <input id="toggle-street-secondary" type="checkbox" />
+                          <span>Secondary/tertiary</span>
                         </label>
                         <label class="toggle-check">
                           <input id="toggle-street-labels" type="checkbox" />
@@ -1984,15 +2172,15 @@
                       <div class="basemap-row land-row street-style-row">
                         <label class="color-wrap">
                           Primary streets
-                          <input id="street-color" type="color" value="#f3efec" />
+                          <input id="street-color" type="color" value="#fcfaf7" />
                         </label>
                         <label class="color-wrap">
                           Minor streets
-                          <input id="minor-street-color" type="color" value="#ffffff" />
+                          <input id="minor-street-color" type="color" value="#ebebeb" />
                         </label>
                         <label class="color-wrap">
                           Street outline
-                          <input id="street-outline-color" type="color" value="#d1d6e0" />
+                          <input id="street-outline-color" type="color" value="#ebebeb" />
                         </label>
                         <label>
                           Street weight
@@ -2005,16 +2193,6 @@
                   <details class="basemap-group" id="highway-tools">
                     <summary>Highways</summary>
                     <div class="basemap-group-body">
-                      <div class="basemap-toggle-row">
-                        <label class="toggle-check">
-                          <input id="toggle-highway-major" type="checkbox" />
-                          <span>Major highways</span>
-                        </label>
-                        <label class="toggle-check">
-                          <input id="toggle-highway-minor" type="checkbox" />
-                          <span>Small highways</span>
-                        </label>
-                      </div>
                       <div class="style-block highway-style-block">
                         <div class="style-block-section">
                           <div class="style-block-label">Fill</div>
@@ -2074,7 +2252,7 @@
                         <div class="row">
                           <label>
                             Highway ref
-                            <input id="highway" type="text" value="I-95" />
+                            <input id="highway" type="text" value="" />
                           </label>
                         </div>
                         <div class="style-row">
@@ -2159,6 +2337,14 @@
                           <span>Other places</span>
                         </label>
                       </div>
+                      <div class="basemap-toggle-row">
+                        <button id="distance-measure-mode" type="button" class="secondary capture-fab">Calculate distance</button>
+                      </div>
+                      <div id="distance-result" class="distance-result" hidden>
+                        <span class="distance-result-label">Driving distance</span>
+                        <span id="distance-result-value" class="distance-result-value">Select two points</span>
+                        <span id="distance-result-meta" class="distance-result-meta">Click Calculate distance, then place a start point and an end point.</span>
+                      </div>
                       <details id="frozen-place-tools" class="basemap-subgroup frozen-tools-panel">
                         <summary><span class="frozen-summary"><span>Frozen places</span><span id="frozen-places-summary-count" class="frozen-summary-count" hidden></span></span></summary>
                         <div class="basemap-subgroup-body">
@@ -2194,15 +2380,6 @@
                           <span>Show POI</span>
                         </label>
                       </div>
-                      <div class="basemap-toggle-row">
-                        <button id="distance-measure-mode" type="button" class="secondary capture-fab">Calculate distance</button>
-                        <button id="clear-distance-measure" type="button" class="secondary capture-fab">Clear</button>
-                      </div>
-                      <div id="distance-result" class="distance-result" hidden>
-                        <span class="distance-result-label">Driving distance</span>
-                        <span id="distance-result-value" class="distance-result-value">Select two points</span>
-                        <span id="distance-result-meta" class="distance-result-meta">Click Calculate distance, then place a start point and an end point.</span>
-                      </div>
                       <details id="frozen-poi-tools" class="basemap-subgroup frozen-tools-panel">
                         <summary><span class="frozen-summary"><span>Frozen POIs</span><span id="frozen-pois-summary-count" class="frozen-summary-count" hidden></span></span></summary>
                         <div class="basemap-subgroup-body">
@@ -2236,17 +2413,11 @@
                   </details>
 
                   <details class="basemap-group" id="advanced-tools">
-                    <summary>Advanced (coming soon)</summary>
+                    <summary>Advanced</summary>
                     <div class="basemap-group-body">
                       <details class="basemap-subgroup">
                         <summary>Buildings</summary>
                         <div class="basemap-subgroup-body">
-                          <div class="basemap-toggle-row">
-                            <label class="toggle-check">
-                              <input id="toggle-buildings" type="checkbox" />
-                              <span>Show buildings</span>
-                            </label>
-                          </div>
                           <div class="style-block">
                             <div class="style-block-section">
                               <div class="style-block-label">Fill</div>
@@ -2262,8 +2433,8 @@
                         </div>
                       </details>
 
-                      <details id="train-tools" class="basemap-subgroup">
-                        <summary>Trains</summary>
+                      <details id="train-tools" class="basemap-subgroup is-disabled">
+                        <summary>Trains (coming soon)</summary>
                         <div class="basemap-subgroup-body">
                           <div class="basemap-toggle-row">
                             <label class="toggle-check">
@@ -2305,8 +2476,8 @@
                         </div>
                       </details>
 
-                      <details class="basemap-subgroup" id="power-lines-tools">
-                        <summary>Transmission lines</summary>
+                      <details class="basemap-subgroup is-disabled" id="power-lines-tools">
+                        <summary>Transmission lines (coming soon)</summary>
                         <div class="basemap-subgroup-body">
                           <div class="basemap-toggle-row">
                             <label class="toggle-check">
@@ -2352,15 +2523,6 @@
                     <span class="settings-button">⚙</span>
                   </summary>
                   <div class="settings-panel">
-                    <div class="preset-row">
-                      <span>Style</span>
-                      <select id="style-preset">
-                        <option value="grey">Simple Grey</option>
-                        <option value="streets">Mapbox Streets</option>
-                        <option value="satellite">Satellite Streets</option>
-                        <option value="dark">Dark Flat</option>
-                      </select>
-                    </div>
                     <label>
                       Mapbox access token
                       <input id="token" type="text" value="pk.eyJ1Ijoibmljb2xlYmFjaG1hbiIsImEiOiJjbXE5eHl1MGYwMGM2MnJwbm13YjJveGRuIn0.E1WbrTh7gLcMrzhnWdSI5A" placeholder="pk.eyJ1..." autocomplete="off" />
@@ -2427,6 +2589,8 @@
       const CAPTURED_LAYER_SHADOW = "hw-captured-shadow";
       const CAPTURED_LAYER_LINE = "hw-captured-line";
       const STREETS_SOURCE = "hw-streets-v8";
+      const LIVE_HIGHLIGHT_ERASED_SOURCE = "hw-live-highlight-erased-source";
+      const LIVE_HIGHLIGHT_ERASED_LAYER = "hw-live-highlight-erased";
       const CAPTURED_ROUTE_SOURCE = "hw-captured-route";
       const DRAWN_SHAPES_SOURCE = "drawn-shapes";
       const DRAWN_SHAPES_INVERT_MASK_SOURCE = "drawn-shapes-invert-mask";
@@ -2459,10 +2623,6 @@
           label: "Satellite Streets",
           style: "mapbox://styles/mapbox/satellite-streets-v12",
         },
-        dark: {
-          label: "Dark Flat",
-          style: "mapbox://styles/mapbox/dark-v11",
-        },
       };
       const BASEMAP_DEFAULT_SHADES = {
         land: "#f5f1f0",
@@ -2470,14 +2630,28 @@
         naturalLandcover: "#bee8b5",
         park: "#b8ebad",
         buildings: "#ded7d3",
-        streets: "#f3efec",
-        minorStreets: "#ffffff",
-        streetOutline: "#d1d6e0",
+        streets: "#fcfaf7",
+        minorStreets: "#ebebeb",
+        streetOutline: "#ebebeb",
         streetWidth: "1",
         motorways: "#f4a352",
         trunks: "#e9c92b",
         highwayOutline: "#f7f5f0",
         highwayOutlineWidth: "1",
+      };
+      const SIMPLE_GREY_BASEMAP_SHADES = {
+        ...BASEMAP_DEFAULT_SHADES,
+        land: "#efede8",
+        landcover: "#e1ddd8",
+        naturalLandcover: "#d7d3cd",
+        park: "#ddd9d3",
+        buildings: "#d6d2cc",
+        streets: "#f8f7f5",
+        minorStreets: "#ffffff",
+        streetOutline: "#d0cac3",
+        motorways: "#d8b792",
+        trunks: "#d7c27c",
+        highwayOutline: "#f7f4ef",
       };
 
       if ("scrollRestoration" in history) {
@@ -2487,15 +2661,19 @@
       const tokenEl = document.getElementById("token");
       const highwayEl = document.getElementById("highway");
       const stylePresetEl = document.getElementById("style-preset");
+      const flattenLandColorControlEl = document.getElementById("flatten-land-color-control");
+      const streetToolsEl = document.getElementById("street-tools");
+      const advancedToolsEl = document.getElementById("advanced-tools");
       const highwayToolsEl = document.getElementById("highway-tools");
       const landGroupEl = document.getElementById("land-group");
+      const landWaterControlEl = document.getElementById("land-water-control");
+      const landFlattenRowEl = document.getElementById("land-flatten-row");
       const basemapGroupEls = Array.from(document.querySelectorAll(".basemap-accordion > details.basemap-group"));
       const panelEl = document.querySelector(".panel");
       const highlightToolbarEl = document.getElementById("highlight-toolbar");
       const interactionHelperEl = document.getElementById("interaction-helper");
       const interactionHelperTitleEl = document.getElementById("interaction-helper-title");
       const interactionHelperTextEl = document.getElementById("interaction-helper-text");
-      const placeMarkerPaletteEl = document.getElementById("place-marker-palette");
       const placeMarkerChipEls = Array.from(document.querySelectorAll(".place-marker-chip"));
       const panelScrollEl = document.getElementById("panel-scroll");
       const panelToggleEl = document.getElementById("panel-toggle");
@@ -2509,13 +2687,10 @@
       const confirmMessageEl = document.getElementById("confirm-message");
       const welcomeOverlayEl = document.getElementById("welcome-overlay");
       const welcomeContinueBtn = document.getElementById("welcome-continue");
+      const importHighlightOverlayEl = document.getElementById("import-highlight-overlay");
+      const importHighlightContinueBtn = document.getElementById("import-highlight-continue");
       const highwayHighlightsToolsEl = document.getElementById("highway-highlights-tools");
       const printPreviewImageEl = document.getElementById("print-preview-image");
-      const printSummaryPresetEl = document.getElementById("print-summary-preset");
-      const printSummaryHighwayEl = document.getElementById("print-summary-highway");
-      const printSummaryHighlightEl = document.getElementById("print-summary-highlight");
-      const printSummaryBasemapEl = document.getElementById("print-summary-basemap");
-      const printSummaryLayersEl = document.getElementById("print-summary-layers");
       const refreshPrintBtn = document.getElementById("refresh-print");
       const backToEditorBtn = document.getElementById("back-to-editor");
       const exportPdfBtn = document.getElementById("export-pdf");
@@ -2539,7 +2714,7 @@
       const highwayOutlineColorEl = document.getElementById("highway-outline-color");
       const highwayOutlineWidthEl = document.getElementById("highway-outline-width");
       const toggleStreetPrimaryBtn = document.getElementById("toggle-street-primary");
-      const toggleStreetLocalBtn = document.getElementById("toggle-street-local");
+      const toggleStreetSecondaryBtn = document.getElementById("toggle-street-secondary");
       const toggleStreetLabelsBtn = document.getElementById("toggle-street-labels");
       const flattenLandBtn = document.getElementById("flatten-land");
       const toggleBuildingsBtn = document.getElementById("toggle-buildings");
@@ -2612,6 +2787,7 @@
       const LAND_PALETTE_SNAPSHOT_KEY = `${STORE_KEY}:landPaletteSnapshot`;
       const STREET_VISIBILITY_KEY = `${STORE_KEY}:streetVisibility`;
       const STREET_PRIMARY_VISIBLE_KEY = `${STORE_KEY}:streetPrimaryVisible`;
+      const STREET_SECONDARY_VISIBLE_KEY = `${STORE_KEY}:streetSecondaryVisible`;
       const STREET_LOCAL_VISIBLE_KEY = `${STORE_KEY}:streetLocalVisible`;
       const STREET_LABELS_VISIBLE_KEY = `${STORE_KEY}:streetLabelsVisible`;
       const MINOR_STREETS_HIDDEN_KEY = `${STORE_KEY}:minorStreetsHidden`;
@@ -2651,6 +2827,75 @@
       const POWER_LINE_OUTLINE_COLOR_KEY = `${STORE_KEY}:powerLineOutlineColor`;
       const POWER_LINE_WIDTH_KEY = `${STORE_KEY}:powerLineWidth`;
       const POWER_LINE_OUTLINE_WIDTH_KEY = `${STORE_KEY}:powerLineOutlineWidth`;
+      function resetStoredAppStateOnLoad() {
+        const storagePrefix = `${STORE_KEY}:`;
+        const keysToRemove = [];
+        for (let index = 0; index < localStorage.length; index += 1) {
+          const key = localStorage.key(index);
+          if (key && key.startsWith(storagePrefix)) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach((key) => localStorage.removeItem(key));
+      }
+      resetStoredAppStateOnLoad();
+      const PROJECT_RUNTIME_STATE_KEYS = [
+        STYLE_PRESET_KEY,
+        HIGHLIGHT_MODE_KEY,
+        `${STORE_KEY}:highway`,
+        `${STORE_KEY}:color`,
+        `${STORE_KEY}:strokeWeight`,
+        LAND_MODE_KEY,
+        LAND_PALETTE_SNAPSHOT_KEY,
+        BASEMAP_SHADES_KEY,
+        CAPTURED_ROUTE_KEY,
+        CAPTURED_ROUTE_REF_KEY,
+        SAVED_HIGHLIGHTS_KEY,
+        PLACE_MARKERS_KEY,
+        DRAWN_SHAPES_KEY,
+        STREET_VISIBILITY_KEY,
+        STREET_PRIMARY_VISIBLE_KEY,
+        STREET_SECONDARY_VISIBLE_KEY,
+        STREET_LOCAL_VISIBLE_KEY,
+        STREET_LABELS_VISIBLE_KEY,
+        MINOR_STREETS_HIDDEN_KEY,
+        BUILDINGS_HIDDEN_KEY,
+        POI_HIDDEN_KEY,
+        TRAIN_MAP_VISIBLE_KEY,
+        TRAIN_MAP_MODE_KEY,
+        TRAIN_LINE_COLOR_KEY,
+        TRAIN_LINE_OUTLINE_COLOR_KEY,
+        TRAIN_LINE_WIDTH_KEY,
+        TRAIN_LINE_OUTLINE_WIDTH_KEY,
+        HIGHWAY_VISIBILITY_KEY,
+        HIGHWAY_MAJOR_VISIBLE_KEY,
+        HIGHWAY_MINOR_VISIBLE_KEY,
+        ROUTE_MARKERS_VISIBLE_KEY,
+        FROZEN_SHIELDS_KEY,
+        FROZEN_SHIELD_MODE_KEY,
+        FROZEN_SHIELD_SELECTED_KEY,
+        FROZEN_SHIELD_SCALE_KEY,
+        FROZEN_PLACES_KEY,
+        FROZEN_PLACE_MODE_KEY,
+        FROZEN_PLACE_SELECTED_KEY,
+        FROZEN_PLACE_SIZE_KEY,
+        FROZEN_PLACE_COLOR_KEY,
+        FROZEN_PLACE_OUTLINE_COLOR_KEY,
+        FROZEN_PLACE_OUTLINE_WIDTH_KEY,
+        FROZEN_POIS_KEY,
+        FROZEN_POI_MODE_KEY,
+        FROZEN_POI_SELECTED_KEY,
+        FROZEN_POI_SIZE_KEY,
+        PLACE_NAME_VISIBILITY_KEY,
+        PLACE_MAJOR_VISIBLE_KEY,
+        PLACE_OTHER_VISIBLE_KEY,
+        STATE_NAME_VISIBILITY_KEY,
+        POWER_LINES_VISIBLE_KEY,
+        POWER_LINE_COLOR_KEY,
+        POWER_LINE_OUTLINE_COLOR_KEY,
+        POWER_LINE_WIDTH_KEY,
+        POWER_LINE_OUTLINE_WIDTH_KEY,
+      ];
       const POWER_LINES_SOURCE = "osm-power-lines";
       const POWER_LINES_MAJOR_SHADOW_LAYER = "osm-power-lines-major-shadow";
       const POWER_LINES_MAJOR_LAYER = "osm-power-lines-major";
@@ -2737,6 +2982,10 @@
       const FROZEN_SHIELDS_SOURCE = "frozen-road-shields";
       const FROZEN_SHIELD_SELECTED_GLOW_LAYER = "frozen-road-shield-selected-glow";
       const FROZEN_SHIELD_SELECTED_RING_LAYER = "frozen-road-shield-selected-ring";
+      const FROZEN_SHIELD_RENDER_DEFAULTS = Object.freeze({
+        textSize: 9.5,
+        iconSize: 1,
+      });
       const FROZEN_PLACES_SOURCE = "frozen-place-names";
       const FROZEN_PLACE_SELECTED_GLOW_LAYER = "frozen-place-selected-glow";
       const FROZEN_PLACE_SELECTED_RING_LAYER = "frozen-place-selected-ring";
@@ -2762,20 +3011,24 @@
       const FROZEN_PLACE_HIT_DISTANCE = 28;
       const FROZEN_POI_HIT_DISTANCE = 28;
       const HIGHWAY_MAJOR_LAYER_IDS = [
-        "road-motorway-trunk",
-        "road-motorway-trunk-case",
-        "bridge-motorway-trunk",
-        "bridge-motorway-trunk-case",
-        "bridge-motorway-trunk-2",
-        "bridge-motorway-trunk-2-case",
-        "tunnel-motorway-trunk",
         "tunnel-motorway-trunk-case",
-        "road-intersection",
-        "road-label",
+        "tunnel-motorway-trunk",
+        "road-motorway-trunk-case",
+        "road-motorway-trunk",
+        "bridge-motorway-trunk-case",
+        "bridge-motorway-trunk-2-case",
+        "bridge-motorway-trunk",
+        "bridge-motorway-trunk-2",
       ];
       const HIGHWAY_MINOR_LAYER_IDS = [
+        "tunnel-major-link-case",
+        "tunnel-major-link",
         "road-major-link",
         "road-major-link-case",
+        "bridge-major-link-case",
+        "bridge-major-link",
+        "bridge-major-link-2-case",
+        "bridge-major-link-2",
       ];
       const HIGHWAY_ALL_LAYER_IDS = [
         ...HIGHWAY_MAJOR_LAYER_IDS,
@@ -2843,16 +3096,14 @@
       });
 
       tokenEl.value = (localStorage.getItem(`${STORE_KEY}:token`) || DEFAULT_TOKEN).trim() || DEFAULT_TOKEN;
-      highwayEl.value = localStorage.getItem(`${STORE_KEY}:highway`) || "I-95";
+      localStorage.removeItem(`${STORE_KEY}:highway`);
+      highwayEl.value = "";
       colorEl.value = (() => {
         const saved = localStorage.getItem(`${STORE_KEY}:color`);
         return !saved || saved === "#ff4d6d" ? "#2563eb" : saved;
       })();
-      stylePresetEl.value = STYLE_PRESETS[localStorage.getItem(STYLE_PRESET_KEY)] ? localStorage.getItem(STYLE_PRESET_KEY) : "streets";
+      stylePresetEl.value = "streets";
       localStorage.setItem(STYLE_PRESET_KEY, stylePresetEl.value);
-      function pickBasemapShade(key, defaultValue, legacyValues = []) {
-        return defaultValue;
-      }
       landColorEl.value = BASEMAP_DEFAULT_SHADES.land;
       landcoverColorEl.value = BASEMAP_DEFAULT_SHADES.landcover;
       naturalLandcoverColorEl.value = BASEMAP_DEFAULT_SHADES.naturalLandcover;
@@ -2895,6 +3146,8 @@
       let capturedRoute = null;
       let capturedRouteRef = "";
       let savedHighlights = [];
+      let liveHighlightExclusionSignatures = new Map();
+      let liveHighlightErasedChains = new Map();
       let placeMarkers = [];
       let drawnShapes = [];
       let placeMarkerInstances = new Map();
@@ -2907,6 +3160,7 @@
       let draftDrawnShapePoints = [];
       let draftDrawnShapeCursor = null;
       let draggedDrawnShapePoint = null;
+      let hoveredDrawnShapeBody = false;
       let hoveredDrawnShapeVertex = false;
       let hoveredDrawnShapeInsertTarget = null;
       let pendingDrawnShapesUiSync = false;
@@ -2914,6 +3168,8 @@
       let eraseMode = false;
       let eraseDrag = null;
       let roadLineWidthDefaults = new Map();
+      let mapPaintDefaults = new Map();
+      let linePaintDefaults = new Map();
       let streetLayerFilterDefaults = new Map();
       let builtLandFilterDefaults = new Map();
       let placeLabelPaintDefaults = new Map();
@@ -2921,10 +3177,9 @@
       let activePanelTab = localStorage.getItem(UI_TAB_KEY) || "editor";
       let panelMinimized = localStorage.getItem(PANEL_MINIMIZED_KEY) === "true";
       let highlightModeEnabled = localStorage.getItem(HIGHLIGHT_MODE_KEY) === "true";
-      let landMode = localStorage.getItem(LAND_MODE_KEY) === "flatten" ? "flatten" : "off";
-      if (localStorage.getItem(LAND_MODE_KEY) === "sync") {
-        localStorage.setItem(LAND_MODE_KEY, "flatten");
-      }
+      let landMode = "off";
+      localStorage.setItem(LAND_MODE_KEY, landMode);
+      syncBasemapPresetShades(stylePresetEl.value);
       let landPaletteSnapshot = (() => {
         try {
           return JSON.parse(localStorage.getItem(LAND_PALETTE_SNAPSHOT_KEY) || "null");
@@ -2945,16 +3200,19 @@
         if (saved === "true" || saved === "false") return saved === "true";
         return legacyStreetVisibility !== "none";
       })();
-      let localStreetsVisible = (() => {
-        const saved = localStorage.getItem(STREET_LOCAL_VISIBLE_KEY);
+      let secondaryStreetsVisible = (() => {
+        const saved = localStorage.getItem(STREET_SECONDARY_VISIBLE_KEY);
         if (saved === "true" || saved === "false") return saved === "true";
         return legacyStreetVisibility === "all";
       })();
+      let localStreetsVisible = true;
       let streetLabelsVisible = (() => {
         const saved = localStorage.getItem(STREET_LABELS_VISIBLE_KEY);
         if (saved === "true" || saved === "false") return saved === "true";
         return true;
       })();
+      let hasRunSecondaryStreetToggleWarmup = false;
+      saveStreetVisibilityState();
       let buildingsVisible = localStorage.getItem(BUILDINGS_HIDDEN_KEY) !== "true";
       let poiVisible = localStorage.getItem(POI_HIDDEN_KEY) !== "true";
       let trainMapVisible = localStorage.getItem(TRAIN_MAP_VISIBLE_KEY) === "true";
@@ -2988,6 +3246,12 @@
         if (saved === "true" || saved === "false") return saved === "true";
         return legacyPlaceNameVisibility === "all";
       })();
+      otherPlacesVisible = true;
+      localStorage.setItem(PLACE_OTHER_VISIBLE_KEY, "true");
+      localStorage.setItem(
+        PLACE_NAME_VISIBILITY_KEY,
+        majorPlacesVisible ? "all" : "none"
+      );
       let stateNamesVisible = localStorage.getItem(STATE_NAME_VISIBILITY_KEY) !== "false";
       let frozenShields = [];
       let frozenPlaces = [];
@@ -2998,6 +3262,10 @@
       let distanceMeasureModeEnabled = false;
       let distanceMeasurePoints = [];
       let distanceMeasureRequestId = 0;
+      let distanceMeasureResultValue = "";
+      let distanceMeasureResultMeta = "";
+      let distanceMeasureResultIsError = false;
+      let distanceMeasureOverlayClearTimeoutId = 0;
       localStorage.removeItem(FROZEN_SHIELD_MODE_KEY);
       localStorage.removeItem(FROZEN_PLACE_MODE_KEY);
       localStorage.removeItem(FROZEN_POI_MODE_KEY);
@@ -3015,13 +3283,19 @@
       let frozenPlaceRefreshQueued = false;
       let frozenPoiInteractionsBound = false;
       let frozenPoiRefreshQueued = false;
+      let committedHighlightRef = normalizeRef(highwayEl.value.trim() || "");
+      let captureRouteNeedsRecapture = false;
+      let lastCapturedHighlightViewportKey = "";
       let currentSpriteSheetCache = null;
       let visibilityApplyQueued = false;
       let basemapApplyQueued = false;
       let highlightApplyQueued = false;
       let pendingProjectViewport = null;
       let pendingImportedHighlightCommit = false;
+      let pendingStylePresetHighlightCommit = false;
+      let currentImportRevision = 0;
       let confirmActionState = null;
+      let interactionHelperTimeoutId = 0;
 
       toggleStateNamesBtn.checked = stateNamesVisible;
       if (frozenShieldScaleEl) {
@@ -3030,27 +3304,27 @@
       }
 
       try {
-        const savedCapturedRoute = localStorage.getItem(CAPTURED_ROUTE_KEY);
-        const savedCapturedRef = localStorage.getItem(CAPTURED_ROUTE_REF_KEY) || "";
-        if (savedCapturedRoute) {
-          capturedRoute = JSON.parse(savedCapturedRoute);
-          capturedRouteRef = savedCapturedRef;
-        }
-        savedHighlights = loadSavedHighlights().map(normalizeSavedHighlight).filter(Boolean);
-        placeMarkers = loadPlaceMarkers().map(normalizePlaceMarker).filter(Boolean);
-        drawnShapes = loadDrawnShapes().map(normalizeDrawnShape).filter(Boolean);
-        frozenShields = loadFrozenShields().map(normalizeFrozenShield).filter(Boolean);
+        localStorage.removeItem(CAPTURED_ROUTE_KEY);
+        localStorage.removeItem(CAPTURED_ROUTE_REF_KEY);
+        localStorage.removeItem(SAVED_HIGHLIGHTS_KEY);
+        localStorage.removeItem(FROZEN_SHIELDS_KEY);
+        localStorage.removeItem(FROZEN_SHIELD_SELECTED_KEY);
+        localStorage.removeItem(FROZEN_POIS_KEY);
+        localStorage.removeItem(FROZEN_POI_SELECTED_KEY);
+        localStorage.removeItem(PLACE_MARKERS_KEY);
+        capturedRoute = null;
+        capturedRouteRef = "";
+        savedHighlights = [];
+        placeMarkers = [];
+        drawnShapes = [];
+        frozenShields = [];
         frozenPlaces = loadFrozenPlaces().map(normalizeFrozenPlace).filter(Boolean);
-        frozenPois = loadFrozenPois().map(normalizeFrozenPoi).filter(Boolean);
-        if (!frozenShields.some((entry) => makeFrozenShieldId(entry) === String(selectedFrozenShieldId))) {
-          selectedFrozenShieldId = "";
-        }
+        frozenPois = [];
+        selectedFrozenShieldId = "";
         if (!frozenPlaces.some((entry) => makeFrozenPlaceId(entry) === String(selectedFrozenPlaceId))) {
           selectedFrozenPlaceId = "";
         }
-        if (!frozenPois.some((entry) => makeFrozenPoiId(entry) === String(selectedFrozenPoiId))) {
-          selectedFrozenPoiId = "";
-        }
+        selectedFrozenPoiId = "";
       } catch {
         capturedRoute = null;
         capturedRouteRef = "";
@@ -3158,19 +3432,8 @@
         };
       }
 
-      function loadPlaceMarkers() {
-        const raw = localStorage.getItem(PLACE_MARKERS_KEY);
-        if (!raw) return [];
-        try {
-          const parsed = JSON.parse(raw);
-          return Array.isArray(parsed) ? parsed : [];
-        } catch {
-          return [];
-        }
-      }
-
       function savePlaceMarkers() {
-        localStorage.setItem(PLACE_MARKERS_KEY, JSON.stringify(placeMarkers));
+        localStorage.removeItem(PLACE_MARKERS_KEY);
       }
 
       function normalizeDrawnShape(entry) {
@@ -3193,19 +3456,8 @@
         };
       }
 
-      function loadDrawnShapes() {
-        const raw = localStorage.getItem(DRAWN_SHAPES_KEY);
-        if (!raw) return [];
-        try {
-          const parsed = JSON.parse(raw);
-          return Array.isArray(parsed) ? parsed : [];
-        } catch {
-          return [];
-        }
-      }
-
       function saveDrawnShapes() {
-        localStorage.setItem(DRAWN_SHAPES_KEY, JSON.stringify(drawnShapes));
+        localStorage.removeItem(DRAWN_SHAPES_KEY);
       }
 
       function buildDrawnShapePolygon(points = []) {
@@ -3453,6 +3705,10 @@
           canvas.style.cursor = plusCursorCss();
           return;
         }
+        if (hoveredDrawnShapeBody) {
+          canvas.style.cursor = "pointer";
+          return;
+        }
         if (hoveredDrawnShapeVertex) {
           canvas.style.cursor = "grab";
           return;
@@ -3544,6 +3800,8 @@
         pin.draggable = false;
         pin.src = placeMarkerIconSvg(entry.styleKey, entry.color);
         pin.style.transform = `scale(${entry.scale})`;
+        pinWrap.style.cursor = "pointer";
+        pin.style.cursor = "pointer";
         pinWrap.appendChild(pin);
 
         const card = document.createElement("div");
@@ -4002,15 +4260,6 @@
         map.triggerRepaint();
       }
 
-      function renderSelectedDrawnShapePoints() {
-        if (!map?.isStyleLoaded()) return;
-        ensureDrawnShapeLayers();
-        const source = map.getSource(DRAWN_SHAPES_EDIT_POINTS_SOURCE);
-        if (!source) return;
-        source.setData(selectedDrawnShapePointsGeoJSON());
-        map.triggerRepaint();
-      }
-
       function removeDrawnShapeEditor() {
         if (!drawnShapeEditorMarker) return;
         drawnShapeEditorMarker.remove();
@@ -4125,10 +4374,6 @@
         } catch {}
       }
 
-      function isShapeEditing(id) {
-        return Boolean(editingShapeId) && editingShapeId === String(id);
-      }
-
       function setEditingShape(id = "") {
         const nextId = String(id || "");
         if (editingShapeId === nextId) return;
@@ -4225,7 +4470,7 @@
         }
       }
 
-      function updateDrawnShapePoint(shapeId, pointIndex, lngLat) {
+      function updateDrawnShapePoint(shapeId, pointIndex, lngLat, { persist = true } = {}) {
         const index = drawnShapes.findIndex((entry) => entry.id === String(shapeId));
         if (index < 0) return;
         const shape = normalizeDrawnShape(drawnShapes[index]);
@@ -4234,7 +4479,7 @@
         const normalized = normalizeDrawnShape(shape);
         if (!normalized) return;
         drawnShapes[index] = normalized;
-        saveDrawnShapes();
+        if (persist) saveDrawnShapes();
         syncDrawnShapesUI();
       }
 
@@ -4287,10 +4532,6 @@
         if (!changed) return;
         saveDrawnShapes();
         syncDrawnShapesUI();
-      }
-
-      function updateSelectedDrawnShapeColor(color) {
-        updateDrawnShapeColor(editingShapeId, color);
       }
 
       function deleteDrawnShapeById(shapeId) {
@@ -4417,16 +4658,58 @@
       function renderDistanceMeasurePoints() {
         if (!map || !map.isStyleLoaded()) return;
         ensureDistanceMeasureOverlay();
-        map.getSource(DISTANCE_MEASURE_SOURCE)?.setData(distanceMeasureGeoJSON());
+        const source = map.getSource(DISTANCE_MEASURE_SOURCE);
+        source?.setData(distanceMeasureGeoJSON());
+        if (map.getLayer(DISTANCE_MEASURE_POINT_LAYER)) {
+          map.setLayoutProperty(
+            DISTANCE_MEASURE_POINT_LAYER,
+            "visibility",
+            distanceMeasurePoints.length ? "visible" : "none"
+          );
+        }
+        map.triggerRepaint();
+      }
+
+      function clearDistanceMeasureOverlay() {
+        if (!map || !map.isStyleLoaded()) return;
+        ensureDistanceMeasureOverlay();
+        const source = map.getSource(DISTANCE_MEASURE_SOURCE);
+        source?.setData(emptyGeoJSON());
+        if (map.getLayer(DISTANCE_MEASURE_POINT_LAYER)) {
+          map.setLayoutProperty(DISTANCE_MEASURE_POINT_LAYER, "visibility", "none");
+        }
+        map.triggerRepaint();
+      }
+
+      function queueDistanceMeasureOverlayClear() {
+        clearDistanceMeasureOverlay();
+        window.requestAnimationFrame(() => clearDistanceMeasureOverlay());
+        if (distanceMeasureOverlayClearTimeoutId) {
+          window.clearTimeout(distanceMeasureOverlayClearTimeoutId);
+        }
+        distanceMeasureOverlayClearTimeoutId = window.setTimeout(() => {
+          clearDistanceMeasureOverlay();
+          distanceMeasureOverlayClearTimeoutId = 0;
+        }, 120);
       }
 
       function setDistanceResult(value = "", meta = "", isError = false) {
         if (!distanceResultEl || !distanceResultValueEl || !distanceResultMetaEl) return;
+        distanceMeasureResultValue = value || "";
+        distanceMeasureResultMeta = meta || "";
+        distanceMeasureResultIsError = Boolean(isError);
         const hasContent = Boolean(value || meta || distanceMeasureModeEnabled || distanceMeasurePoints.length);
         distanceResultEl.hidden = !hasContent;
         distanceResultValueEl.textContent = value || "Select two points";
         distanceResultMetaEl.textContent = meta || "Click Calculate distance, then place a start point and an end point.";
         distanceResultValueEl.style.color = isError ? "#b91c1c" : "#0f172a";
+      }
+
+      function pulseDistanceResult() {
+        if (!distanceResultEl) return;
+        distanceResultEl.classList.remove("distance-result-pulse");
+        void distanceResultEl.offsetWidth;
+        distanceResultEl.classList.add("distance-result-pulse");
       }
 
       function formatDrivingDistance(distanceMeters) {
@@ -4436,13 +4719,59 @@
         return `${miles.toFixed(2)} miles`;
       }
 
+      function getNearestDistanceMeasurePlaceName(coords) {
+        if (!map?.isStyleLoaded() || !coords) return "";
+        const point = map.project(coords);
+        const placeLayerIds = getPlaceVisibilityTargets().nonState;
+        if (!placeLayerIds.length) return "";
+        const nearbyFeatures = map.queryRenderedFeatures(
+          [
+            [point.x - 32, point.y - 32],
+            [point.x + 32, point.y + 32],
+          ],
+          { layers: placeLayerIds }
+        );
+
+        let bestLabel = "";
+        let bestScore = Infinity;
+        for (const feature of nearbyFeatures) {
+          const label = getPlaceLabelFromFeature(feature);
+          if (!label) continue;
+          const featureCoords = getFeatureCoordinates(feature, point);
+          if (!featureCoords) continue;
+          const projected = map.project(featureCoords);
+          const distance = Math.hypot(projected.x - point.x, projected.y - point.y);
+          if (distance < bestScore) {
+            bestScore = distance;
+            bestLabel = label;
+          }
+        }
+        return bestLabel;
+      }
+
+      function formatDistanceMeasureRouteLabel(points) {
+        if (!Array.isArray(points) || points.length < 2) return "";
+        const startLabel = getNearestDistanceMeasurePlaceName(points[0]);
+        const endLabel = getNearestDistanceMeasurePlaceName(points[1]);
+        if (startLabel && endLabel) return `${startLabel} to ${endLabel}`;
+        if (startLabel || endLabel) return `${startLabel || "Start"} to ${endLabel || "End"}`;
+        return "Distance between selected points";
+      }
+
       function clearDistanceMeasurement({ keepMode = false, silent = false } = {}) {
         distanceMeasureRequestId += 1;
         distanceMeasurePoints = [];
+        distanceMeasureResultValue = "";
+        distanceMeasureResultMeta = "";
+        distanceMeasureResultIsError = false;
         if (!keepMode) {
           distanceMeasureModeEnabled = false;
         }
-        renderDistanceMeasurePoints();
+        if (distanceMeasurePoints.length) {
+          renderDistanceMeasurePoints();
+        } else {
+          queueDistanceMeasureOverlayClear();
+        }
         updateVisibilityButtons();
         if (distanceMeasureModeEnabled) {
           setDistanceResult("", "Click the map to place a start point and an end point.");
@@ -4465,9 +4794,18 @@
           return;
         }
         distanceMeasureModeEnabled = nextValue;
-        distanceMeasurePoints = [];
+        if (distanceMeasureModeEnabled) {
+          distanceMeasurePoints = [];
+          distanceMeasureResultValue = "";
+          distanceMeasureResultMeta = "";
+          distanceMeasureResultIsError = false;
+        }
         distanceMeasureRequestId += 1;
-        renderDistanceMeasurePoints();
+        if (distanceMeasurePoints.length || distanceMeasureModeEnabled) {
+          renderDistanceMeasurePoints();
+        } else {
+          queueDistanceMeasureOverlayClear();
+        }
         updateVisibilityButtons();
         if (map?.getCanvas?.()) {
           map.getCanvas().style.cursor = distanceMeasureModeEnabled ? "crosshair" : "";
@@ -4476,7 +4814,11 @@
           setDistanceResult("", "Click the map to place a start point and an end point.");
           setStatus("Distance tool on. Click the map to place the first point.");
         } else {
-          setDistanceResult();
+          setDistanceResult(
+            distanceMeasureResultValue,
+            distanceMeasureResultMeta,
+            distanceMeasureResultIsError
+          );
           setStatus("Distance tool off.");
         }
       }
@@ -4510,10 +4852,19 @@
           if (!Number.isFinite(distanceMeters) || distanceMeters <= 0) {
             throw new Error("No drivable route was found between those points.");
           }
-          setDistanceResult(formatDrivingDistance(distanceMeters));
+          const routeLabel = formatDistanceMeasureRouteLabel(points);
+          setDistanceResult(formatDrivingDistance(distanceMeters), routeLabel);
+          queueDistanceMeasureOverlayClear();
+          pulseDistanceResult();
+          distanceMeasureModeEnabled = false;
+          updateVisibilityButtons();
+          if (map?.getCanvas?.()) {
+            map.getCanvas().style.cursor = "";
+          }
           setStatus(`Driving distance: ${formatDrivingDistance(distanceMeters)}.`);
         } catch (error) {
           if (requestId !== distanceMeasureRequestId) return;
+          queueDistanceMeasureOverlayClear();
           setDistanceResult("Could not calculate", error?.message || "Distance lookup failed.", true);
           setStatus(`Could not calculate driving distance: ${error?.message || error}`, true);
         }
@@ -4545,9 +4896,17 @@
         }
 
         const requestId = ++distanceMeasureRequestId;
+        const points = distanceMeasurePoints.slice(0, 2);
+        distanceMeasureModeEnabled = false;
+        distanceMeasurePoints = [];
+        queueDistanceMeasureOverlayClear();
+        updateVisibilityButtons();
+        if (map?.getCanvas?.()) {
+          map.getCanvas().style.cursor = "";
+        }
         setDistanceResult("Calculating...", "Looking up driving distance between the two points.");
         setStatus("Calculating driving distance...");
-        void fetchDrivingDistance(distanceMeasurePoints.slice(0, 2), requestId);
+        void fetchDrivingDistance(points, requestId);
       }
 
       function closeConfirmDialog() {
@@ -4561,6 +4920,33 @@
 
       function closeWelcomeOverlay() {
         welcomeOverlayEl?.setAttribute("hidden", "");
+      }
+
+      function openImportHighlightOverlay() {
+        importHighlightOverlayEl?.removeAttribute("hidden");
+        setTimeout(() => importHighlightContinueBtn?.focus(), 0);
+      }
+
+      function closeImportHighlightOverlay() {
+        importHighlightOverlayEl?.setAttribute("hidden", "");
+      }
+
+      function shouldShowImportedHighlightOverlay(stylePreset, highlights) {
+        const normalizedPreset = normalizeStylePresetValue(stylePreset);
+        return (
+          Array.isArray(highlights) &&
+          highlights.length > 0 &&
+          (normalizedPreset === "satellite" || normalizedPreset === "grey")
+        );
+      }
+
+      function shouldDropPinForSearchResult(query, match) {
+        if (!query || !match || !Array.isArray(match.center) || match.center.length < 2) return false;
+        const normalizedQuery = String(query).trim();
+        const placeTypes = Array.isArray(match.place_type) ? match.place_type.map((value) => String(value || "").toLowerCase()) : [];
+        const hasStreetNumber = /\d/.test(normalizedQuery);
+        const looksAddressLike = /[a-z]/i.test(normalizedQuery) && /(?:street|st|avenue|ave|road|rd|drive|dr|lane|ln|boulevard|blvd|court|ct|circle|cir|way|parkway|pkwy|terrace|ter|place|pl)\b/i.test(normalizedQuery);
+        return hasStreetNumber && looksAddressLike && placeTypes.includes("address");
       }
 
       function openConfirmDialog(message, onConfirm, acceptLabel = "Delete") {
@@ -4636,6 +5022,13 @@
           }
 
           repaintSavedHighways();
+
+          if (shouldDropPinForSearchResult(query, match)) {
+            await waitForMapIdle(1800);
+            addPlaceMarkerAt({ lng: Number(match.center[0]), lat: Number(match.center[1]) }, "solid");
+            setStatus(`Jumped to ${match.place_name || query} and dropped a solid pin.`);
+            return;
+          }
 
           setStatus(`Jumped to ${match.place_name || query}.`);
         } catch (error) {
@@ -4905,6 +5298,7 @@
         return {
           builtLandVisible,
           primaryStreetsVisible,
+          secondaryStreetsVisible,
           localStreetsVisible,
           buildingsVisible,
           poiVisible,
@@ -4950,9 +5344,12 @@
       }
 
       function writeBasemapShades(nextShades = {}) {
-        landColorEl.value = nextShades.land || landColorEl.value;
-        landcoverColorEl.value = nextShades.landcover || landcoverColorEl.value;
-        naturalLandcoverColorEl.value = nextShades.naturalLandcover || naturalLandcoverColorEl.value;
+        landColorEl.value = nextShades.land || nextShades.landcover || nextShades.naturalLandcover || landColorEl.value;
+        if (landMode === "flatten") {
+          applyFlattenedLandPalette(landColorEl.value);
+        } else {
+          syncLandTonePalette(landColorEl.value);
+        }
         parkColorEl.value = nextShades.park || parkColorEl.value;
         waterColorEl.value = nextShades.water || waterColorEl.value;
         buildingColorEl.value = nextShades.buildings || buildingColorEl.value;
@@ -5012,8 +5409,61 @@
         };
       }
 
+      function normalizeStylePresetValue(value) {
+        if (value === "dark" || value === "monochrome") return "grey";
+        if (value === "satellite-plain") return "satellite";
+        return value === "grey" || value === "streets" || value === "satellite"
+          ? value
+          : "streets";
+      }
+
       function getStylePreset() {
-        return STYLE_PRESETS[stylePresetEl.value] ? stylePresetEl.value : "streets";
+        return normalizeStylePresetValue(stylePresetEl.value);
+      }
+
+      function getPresetBasemapShades(preset = getStylePreset()) {
+        if (preset === "grey") {
+          return SIMPLE_GREY_BASEMAP_SHADES;
+        }
+        return BASEMAP_DEFAULT_SHADES;
+      }
+
+      function shouldUseExplicitPresetLandShades(preset = getStylePreset()) {
+        return preset === "grey";
+      }
+
+      function shouldHideTerrainReliefForPreset(preset = getStylePreset()) {
+        return preset === "streets";
+      }
+
+      function shouldPreserveDefaultGreyBasemapStyling(preset = getStylePreset()) {
+        return preset === "grey" && landMode !== "flatten";
+      }
+
+      function shouldReloadMapStyle(previousPreset, nextPreset) {
+        const previousStyleUrl = STYLE_PRESETS[normalizeStylePresetValue(previousPreset)]?.style || "";
+        const nextStyleUrl = STYLE_PRESETS[normalizeStylePresetValue(nextPreset)]?.style || "";
+        return previousStyleUrl !== nextStyleUrl;
+      }
+
+      function syncBasemapPresetShades(preset = getStylePreset()) {
+        const shades = getPresetBasemapShades(preset);
+        landColorEl.value = shades.land;
+        if (landcoverColorEl) landcoverColorEl.value = shades.landcover;
+        if (naturalLandcoverColorEl) naturalLandcoverColorEl.value = shades.naturalLandcover;
+        parkColorEl.value = shades.park;
+        buildingColorEl.value = shades.buildings;
+        streetColorEl.value = shades.streets;
+        minorStreetColorEl.value = shades.minorStreets;
+        streetOutlineColorEl.value = shades.streetOutline;
+        highwayColorEl.value = shades.motorways;
+        trunkHighwayColorEl.value = shades.trunks;
+        highwayOutlineColorEl.value = shades.highwayOutline;
+        streetWidthEl.value = String(shades.streetWidth ?? BASEMAP_DEFAULT_SHADES.streetWidth);
+        highwayOutlineWidthEl.value = String(shades.highwayOutlineWidth ?? BASEMAP_DEFAULT_SHADES.highwayOutlineWidth);
+        if (landMode === "flatten") {
+          applyFlattenedLandPalette(shades.land);
+        }
       }
 
       function readProjectViewport() {
@@ -5094,12 +5544,30 @@
         ];
       }
 
+      function applyProjectViewport(viewport) {
+        if (!map?.isStyleLoaded() || !viewport) return false;
+        if (viewport.kind === "bounds" && Array.isArray(viewport.bounds)) {
+          map.fitBounds(viewport.bounds, {
+            padding: { top: 40, right: 40, bottom: 40, left: 420 },
+            duration: 0,
+            maxZoom: 13,
+          });
+          return true;
+        }
+        if (viewport.kind === "camera" && viewport.camera) {
+          map.jumpTo(viewport.camera);
+          return true;
+        }
+        return false;
+      }
+
       function applyPendingProjectViewport() {
         if (!pendingProjectViewport || !map?.isStyleLoaded()) return;
         const nextViewport = pendingProjectViewport;
         pendingProjectViewport = null;
         try {
           map.resize();
+          applyProjectViewport(nextViewport);
           window.requestAnimationFrame(() => {
             try {
               if (!map?.isStyleLoaded()) {
@@ -5107,17 +5575,7 @@
                 return;
               }
               map.resize();
-              if (nextViewport.kind === "bounds" && Array.isArray(nextViewport.bounds)) {
-                map.fitBounds(nextViewport.bounds, {
-                  padding: { top: 40, right: 40, bottom: 40, left: 420 },
-                  duration: 0,
-                  maxZoom: 13,
-                });
-                return;
-              }
-              if (nextViewport.kind === "camera" && nextViewport.camera) {
-                map.jumpTo(nextViewport.camera);
-              }
+              applyProjectViewport(nextViewport);
             } catch {}
           });
         } catch {}
@@ -5129,17 +5587,49 @@
         return /satellite/i.test(preset) || /satellite/i.test(styleUrl);
       }
 
+      function isSimpleGreyPreset() {
+        return getStylePreset() === "grey";
+      }
+
+      function updateFlattenLandColorControlVisibility() {
+        if (!flattenLandColorControlEl) return;
+        const shouldShow = getStylePreset() === "streets" && landMode === "flatten";
+        flattenLandColorControlEl.hidden = !shouldShow;
+        flattenLandColorControlEl.classList.toggle("is-visible", shouldShow);
+      }
+
       function updateLandPanelVisibility() {
-        if (!landGroupEl) return;
-        const isHidden = isSatellitePreset();
-        landGroupEl.hidden = isHidden;
-        if (isHidden) {
-          landGroupEl.open = false;
+        const isSatellite = isSatellitePreset();
+        const isSimpleGrey = isSimpleGreyPreset();
+        if (landGroupEl) {
+          landGroupEl.hidden = false;
         }
+        if (streetToolsEl) streetToolsEl.hidden = isSatellite;
+        if (advancedToolsEl) advancedToolsEl.hidden = isSatellite || isSimpleGrey;
+        if (highwayToolsEl) highwayToolsEl.hidden = isSatellite || isSimpleGrey;
+        if (routeMarkerToolsEl) routeMarkerToolsEl.hidden = isSimpleGrey;
+        if (landWaterControlEl) {
+          landWaterControlEl.hidden = isSatellite;
+          landWaterControlEl.style.display = isSatellite ? "none" : "";
+        }
+        if (flattenLandBtn) flattenLandBtn.hidden = isSatellite;
+        if (landFlattenRowEl) landFlattenRowEl.hidden = isSatellite;
+        if (flattenLandBtn) {
+          flattenLandBtn.textContent = isSimpleGrey ? "Apply water color" : "Flatten land";
+        }
+        updateFlattenLandColorControlVisibility();
       }
 
       function getMapStyleUrl() {
         return STYLE_PRESETS[getStylePreset()].style;
+      }
+
+      function getMapStyleConfig(preset = getStylePreset()) {
+        return undefined;
+      }
+
+      function applyPresetStyleConfig() {
+        if (!map?.isStyleLoaded?.() || typeof map?.setConfigProperty !== "function") return;
       }
 
       function getViewportImageDataUrl() {
@@ -5344,14 +5834,8 @@
         return result;
       }
 
-      function updatePrintSummary() {
-        return;
-      }
-
       function updatePrintPreview() {
         if (!printPreviewImageEl) return;
-        updatePrintSummary();
-
         const dataUrl = getViewportImageDataUrl();
         if (dataUrl) {
           printPreviewImageEl.src = dataUrl;
@@ -5416,7 +5900,23 @@
       }
 
       function clearInteractionHelper() {
+        if (interactionHelperTimeoutId) {
+          window.clearTimeout(interactionHelperTimeoutId);
+          interactionHelperTimeoutId = 0;
+        }
         setInteractionHelper("", "");
+      }
+
+      function showTemporaryInteractionHelper(title, text, durationMs = 3600) {
+        if (interactionHelperTimeoutId) {
+          window.clearTimeout(interactionHelperTimeoutId);
+          interactionHelperTimeoutId = 0;
+        }
+        setInteractionHelper(title, text);
+        interactionHelperTimeoutId = window.setTimeout(() => {
+          interactionHelperTimeoutId = 0;
+          updateInteractionHelper();
+        }, durationMs);
       }
 
       function updateInteractionHelper() {
@@ -5603,14 +6103,19 @@
       }
 
       function readBasemapShades() {
+        const preset = getStylePreset();
+        const useExplicitPresetLandShades = shouldUseExplicitPresetLandShades(preset);
         const flattenedLandValue = landMode === "flatten" ? landColorEl.value : null;
+        const tintedLandShades = !useExplicitPresetLandShades && landMode === "off" && isLandToneTintActive(landColorEl.value)
+          ? deriveLandToneShades(landColorEl.value)
+          : null;
         return {
-          land: landColorEl.value,
-          landcover: flattenedLandValue || landcoverColorEl.value,
-          naturalLandcover: flattenedLandValue || naturalLandcoverColorEl.value,
+          land: flattenedLandValue || tintedLandShades?.land || landColorEl.value,
+          landcover: flattenedLandValue || tintedLandShades?.landcover || landcoverColorEl.value,
+          naturalLandcover: flattenedLandValue || tintedLandShades?.naturalLandcover || naturalLandcoverColorEl.value,
           park: flattenedLandValue || parkColorEl.value,
           water: waterColorEl.value,
-          buildings: buildingColorEl.value,
+          buildings: flattenedLandValue || buildingColorEl.value,
           streets: streetColorEl.value,
           minorStreets: minorStreetColorEl.value,
           streetOutline: streetOutlineColorEl.value,
@@ -5627,18 +6132,63 @@
         localStorage.setItem(BASEMAP_SHADES_KEY, JSON.stringify(readBasemapShades()));
       }
 
+      function isLandToneTintActive(value = landColorEl.value) {
+        return String(value || "").toLowerCase() !== String(BASEMAP_DEFAULT_SHADES.land || "").toLowerCase();
+      }
+
+      function mixHexColors(baseColor, tintColor, amount = 0.5) {
+        const base = hexToRgb(baseColor);
+        const tint = hexToRgb(tintColor);
+        if (!base || !tint) return tintColor;
+        const mix = Math.max(0, Math.min(1, Number(amount) || 0));
+        return rgbToHex({
+          r: base.r + ((tint.r - base.r) * mix),
+          g: base.g + ((tint.g - base.g) * mix),
+          b: base.b + ((tint.b - base.b) * mix),
+        });
+      }
+
+      function deriveLandToneShades(value = landColorEl.value) {
+        const tint = String(value || landColorEl.value || BASEMAP_DEFAULT_SHADES.land);
+        return {
+          land: mixHexColors("#f2f2f2", tint, 0.78),
+          landcover: mixHexColors("#d6d6d6", tint, 0.34),
+          naturalLandcover: mixHexColors("#b9b9b9", tint, 0.46),
+        };
+      }
+
+      function restoreDefaultLandToneDerivedPalette() {
+        if (landcoverColorEl) landcoverColorEl.value = BASEMAP_DEFAULT_SHADES.landcover;
+        if (naturalLandcoverColorEl) naturalLandcoverColorEl.value = BASEMAP_DEFAULT_SHADES.naturalLandcover;
+      }
+
+      function syncLandTonePalette(value = landColorEl.value) {
+        const nextValue = String(value || landColorEl.value || "");
+        landColorEl.value = nextValue;
+        if (landMode === "flatten") {
+          if (landcoverColorEl) landcoverColorEl.value = nextValue;
+          if (naturalLandcoverColorEl) naturalLandcoverColorEl.value = nextValue;
+          return;
+        }
+        if (isLandToneTintActive(nextValue)) {
+          const tinted = deriveLandToneShades(nextValue);
+          if (landcoverColorEl) landcoverColorEl.value = tinted.landcover;
+          if (naturalLandcoverColorEl) naturalLandcoverColorEl.value = tinted.naturalLandcover;
+          return;
+        }
+        restoreDefaultLandToneDerivedPalette();
+      }
+
       function applyFlattenedLandPalette(value) {
         landColorEl.value = value;
-        landcoverColorEl.value = value;
-        naturalLandcoverColorEl.value = value;
+        if (landcoverColorEl) landcoverColorEl.value = value;
+        if (naturalLandcoverColorEl) naturalLandcoverColorEl.value = value;
         parkColorEl.value = value;
       }
 
       function captureLandPaletteSnapshot() {
         landPaletteSnapshot = {
           land: landColorEl.value,
-          landcover: landcoverColorEl.value,
-          naturalLandcover: naturalLandcoverColorEl.value,
           park: parkColorEl.value,
         };
         localStorage.setItem(LAND_PALETTE_SNAPSHOT_KEY, JSON.stringify(landPaletteSnapshot));
@@ -5654,44 +6204,47 @@
         })();
         if (!snapshot) return false;
         landColorEl.value = snapshot.land || landColorEl.value;
-        landcoverColorEl.value = snapshot.landcover || landcoverColorEl.value;
-        naturalLandcoverColorEl.value = snapshot.naturalLandcover || naturalLandcoverColorEl.value;
+        restoreDefaultLandToneDerivedPalette();
         parkColorEl.value = snapshot.park || parkColorEl.value;
         return true;
       }
 
       function updateLandModeButtons() {
+        if (flattenLandBtn) {
+          flattenLandBtn.textContent = isSimpleGreyPreset() ? "Apply water color" : "Flatten land";
+        }
         flattenLandBtn.classList.toggle("active", landMode === "flatten");
         landGroupEl?.classList.toggle("flattened", landMode === "flatten");
         for (const el of document.querySelectorAll(".land-linked")) {
           el.hidden = landMode === "flatten";
         }
+        updateFlattenLandColorControlVisibility();
       }
 
       function updateVisibilityButtons() {
         toggleStreetPrimaryBtn.checked = primaryStreetsVisible;
-        toggleStreetLocalBtn.checked = localStreetsVisible;
+        toggleStreetSecondaryBtn.checked = secondaryStreetsVisible;
         toggleStreetLabelsBtn.checked = streetLabelsVisible;
-        toggleBuildingsBtn.checked = buildingsVisible;
+        if (toggleBuildingsBtn) toggleBuildingsBtn.checked = buildingsVisible;
         togglePoiBtn.checked = poiVisible;
         toggleTrainMapBtn.checked = trainMapVisible;
         togglePowerLinesBtn.checked = powerLinesVisible;
         toggleRouteMarkersBtn.checked = routeMarkersVisible;
-        toggleHighwayMajorBtn.checked = majorHighwaysVisible;
-        toggleHighwayMinorBtn.checked = minorHighwaysVisible;
+        if (toggleHighwayMajorBtn) toggleHighwayMajorBtn.checked = majorHighwaysVisible;
+        if (toggleHighwayMinorBtn) toggleHighwayMinorBtn.checked = minorHighwaysVisible;
         togglePlaceMajorBtn.checked = majorPlacesVisible;
         togglePlaceOtherBtn.checked = otherPlacesVisible;
         distanceMeasureModeBtn?.classList.toggle("active", distanceMeasureModeEnabled);
         clearDistanceMeasureBtn?.toggleAttribute("disabled", !distanceMeasureModeEnabled && !distanceMeasurePoints.length);
         toggleStreetPrimaryBtn.closest(".toggle-check")?.classList.toggle("active", primaryStreetsVisible);
-        toggleStreetLocalBtn.closest(".toggle-check")?.classList.toggle("active", localStreetsVisible);
+        toggleStreetSecondaryBtn.closest(".toggle-check")?.classList.toggle("active", secondaryStreetsVisible);
         toggleStreetLabelsBtn.closest(".toggle-check")?.classList.toggle("active", streetLabelsVisible);
-        toggleBuildingsBtn.closest(".toggle-check")?.classList.toggle("active", buildingsVisible);
+        toggleBuildingsBtn?.closest(".toggle-check")?.classList.toggle("active", buildingsVisible);
         togglePoiBtn.closest(".toggle-check")?.classList.toggle("active", poiVisible);
         togglePowerLinesBtn.closest(".toggle-check")?.classList.toggle("active", powerLinesVisible);
         toggleRouteMarkersBtn.closest(".toggle-check")?.classList.toggle("active", routeMarkersVisible);
-        toggleHighwayMajorBtn.closest(".toggle-check")?.classList.toggle("active", majorHighwaysVisible);
-        toggleHighwayMinorBtn.closest(".toggle-check")?.classList.toggle("active", minorHighwaysVisible);
+        toggleHighwayMajorBtn?.closest(".toggle-check")?.classList.toggle("active", majorHighwaysVisible);
+        toggleHighwayMinorBtn?.closest(".toggle-check")?.classList.toggle("active", minorHighwaysVisible);
         togglePlaceMajorBtn.closest(".toggle-check")?.classList.toggle("active", majorPlacesVisible);
         togglePlaceOtherBtn.closest(".toggle-check")?.classList.toggle("active", otherPlacesVisible);
         trainMapModeEl.value = trainMapMode;
@@ -5703,13 +6256,25 @@
       }
 
       function setLayerVisibility(layerId, hidden) {
-        if (!map || !map.isStyleLoaded() || !map.getLayer(layerId)) return false;
+        if (!map || !map.isStyleLoaded() || !hasStyleLayer(layerId)) return false;
+        const layer = getMapStyleLayers().find((entry) => entry.id === layerId);
+        let changed = false;
         try {
           map.setLayoutProperty(layerId, "visibility", hidden ? "none" : "visible");
-          return true;
-        } catch {
-          return false;
+          changed = true;
+        } catch {}
+        if (layer?.type === "line") {
+          const cacheKey = `${layerId}:line-opacity`;
+          const defaultValue = linePaintDefaults.has(cacheKey)
+            ? linePaintDefaults.get(cacheKey)
+            : (layer?.paint?.["line-opacity"] ?? 1);
+          linePaintDefaults.set(cacheKey, defaultValue);
+          try {
+            map.setPaintProperty(layerId, "line-opacity", hidden ? 0 : defaultValue);
+            changed = true;
+          } catch {}
         }
+        return changed;
       }
 
       function setLayerVisibilityByIds(layerIds, hidden) {
@@ -5723,13 +6288,25 @@
       }
 
       function setExistingLayerVisibility(layerId, hidden) {
-        if (!map || !map.getLayer(layerId)) return false;
+        if (!map || !hasStyleLayer(layerId)) return false;
+        const layer = getMapStyleLayers().find((entry) => entry.id === layerId);
+        let changed = false;
         try {
           map.setLayoutProperty(layerId, "visibility", hidden ? "none" : "visible");
-          return true;
-        } catch {
-          return false;
+          changed = true;
+        } catch {}
+        if (layer?.type === "line") {
+          const cacheKey = `${layerId}:line-opacity`;
+          const defaultValue = linePaintDefaults.has(cacheKey)
+            ? linePaintDefaults.get(cacheKey)
+            : (layer?.paint?.["line-opacity"] ?? 1);
+          linePaintDefaults.set(cacheKey, defaultValue);
+          try {
+            map.setPaintProperty(layerId, "line-opacity", hidden ? 0 : defaultValue);
+            changed = true;
+          } catch {}
         }
+        return changed;
       }
 
       function setExistingLayerVisibilityByIds(layerIds, hidden) {
@@ -5761,6 +6338,12 @@
         return layers;
       }
 
+      function hasStyleLayer(layerId) {
+        if (!map || !layerId) return false;
+        if (map.getLayer?.(layerId)) return true;
+        return getMapStyleLayers().some((layer) => layer?.id === layerId);
+      }
+
       function getPlacePaintDefault(layerId, property) {
         const cacheKey = `${layerId}:${property}`;
         if (placeLabelPaintDefaults.has(cacheKey)) {
@@ -5773,9 +6356,18 @@
       }
 
       function setPlaceLayerHidden(layerId, hidden) {
-        if (!map || !map.getLayer(layerId)) return false;
+        if (!map || !hasStyleLayer(layerId)) return false;
         let changed = false;
         for (const property of ["text-opacity", "icon-opacity"]) {
+          const cacheKey = `${layerId}:${property}`;
+          if (!placeLabelPaintDefaults.has(cacheKey)) {
+            const currentValue = map.getPaintProperty?.(layerId, property);
+            if (currentValue != null) {
+              placeLabelPaintDefaults.set(cacheKey, deepCloneStyleValue(currentValue));
+            } else {
+              void getPlacePaintDefault(layerId, property);
+            }
+          }
           const nextValue = hidden ? 0 : getPlacePaintDefault(layerId, property);
           try {
             map.setPaintProperty(layerId, property, nextValue);
@@ -5793,17 +6385,6 @@
           }
         }
         return matched;
-      }
-
-      function getPoiPaintDefault(layerId, property) {
-        const cacheKey = `${layerId}:${property}`;
-        if (poiLabelPaintDefaults.has(cacheKey)) {
-          return poiLabelPaintDefaults.get(cacheKey);
-        }
-        const layer = getMapStyleLayers().find((entry) => entry.id === layerId);
-        const value = layer?.paint?.[property] ?? 1;
-        poiLabelPaintDefaults.set(cacheKey, value);
-        return value;
       }
 
       function ensurePoiPaintDefault(layerId, property) {
@@ -5829,7 +6410,7 @@
       }
 
       function setPoiLayerHidden(layerId, hidden) {
-        if (!map || !map.getLayer(layerId)) return false;
+        if (!map || !hasStyleLayer(layerId)) return false;
         let changed = false;
         try {
           map.setLayoutProperty(layerId, "visibility", hidden ? "none" : "visible");
@@ -5857,7 +6438,7 @@
       }
 
       function setStateLayerHidden(layerId, hidden) {
-        if (!map || !map.getLayer(layerId)) return false;
+        if (!map || !hasStyleLayer(layerId)) return false;
         try {
           map.setLayoutProperty(layerId, "visibility", hidden ? "none" : "visible");
           return true;
@@ -5880,13 +6461,13 @@
         if (streetLayerFilterDefaults.has(layerId)) {
           return streetLayerFilterDefaults.get(layerId);
         }
-        const baseFilter = map?.getStyle?.()?.layers?.find((layer) => layer.id === layerId)?.filter ?? null;
+        const baseFilter = getMapStyleLayers().find((layer) => layer.id === layerId)?.filter ?? null;
         streetLayerFilterDefaults.set(layerId, baseFilter);
         return baseFilter;
       }
 
       function setLayerFilter(layerId, filter) {
-        if (!map || !map.isStyleLoaded() || !map.getLayer(layerId)) return false;
+        if (!map || !map.isStyleLoaded() || !hasStyleLayer(layerId)) return false;
         try {
           map.setFilter(layerId, filter);
           return true;
@@ -5942,29 +6523,6 @@
           const sourceLayer = String(layer["source-layer"] || "").toLowerCase();
           const layerId = layer.id;
           if (!layerId || isTrainLineLayer(id) || isHighwayLayer(id)) continue;
-          if (sourceLayer === "road" && (id.includes("case") || id.includes("-bg") || id.includes("outline"))) {
-            if (id.includes("path") || id.includes("pedestrian") || id.includes("steps")) {
-              targets.paths.add(layerId);
-              continue;
-            }
-            if (id.includes("secondary-tertiary")) {
-              targets.secondary.add(layerId);
-              continue;
-            }
-            if (id.includes("primary") && !id.includes("motorway") && !id.includes("trunk")) {
-              targets.primary.add(layerId);
-              continue;
-            }
-            if (
-              id.includes("minor") ||
-              id.includes("street") ||
-              id.includes("residential") ||
-              id.includes("service")
-            ) {
-              targets.local.add(layerId);
-              continue;
-            }
-          }
           const isStreetLabelLayer =
             layer?.type === "symbol" &&
             (
@@ -5982,25 +6540,62 @@
             targets.labels.add(layerId);
             continue;
           }
-          if (id.includes("path") || id.includes("pedestrian") || id.includes("steps")) {
-            targets.paths.add(layerId);
-            continue;
-          }
-          if (id.includes("secondary-tertiary")) {
-            targets.secondary.add(layerId);
-            continue;
-          }
-          if (id.includes("primary") && !id.includes("motorway") && !id.includes("trunk")) {
+
+          const isPrimaryStreetLayerId =
+            sourceLayer === "road" &&
+            (id.includes("primary")) &&
+            !id.includes("primary_link") &&
+            !id.includes("motorway") &&
+            !id.includes("trunk") &&
+            !id.includes("secondary") &&
+            !id.includes("tertiary");
+
+          if (isPrimaryStreetLayerId) {
             targets.primary.add(layerId);
             continue;
           }
-          if (
-            id.includes("minor") ||
-            id.includes("street") ||
-            id.includes("residential") ||
-            id.includes("service")
-          ) {
+
+          const isSecondaryStreetLayerId =
+            sourceLayer === "road" &&
+            (
+              id.includes("secondary") ||
+              id.includes("tertiary") ||
+              id.includes("secondary-tertiary")
+            ) &&
+            !id.includes("motorway") &&
+            !id.includes("trunk") &&
+            !id.includes("primary");
+
+          if (isSecondaryStreetLayerId) {
+            targets.secondary.add(layerId);
+            continue;
+          }
+
+          const isLocalStreetLayerId =
+            sourceLayer === "road" &&
+            (
+              id.includes("minor") ||
+              id.includes("street") ||
+              id.includes("residential") ||
+              id.includes("service") ||
+              id.includes("link")
+            ) &&
+            !id.includes("motorway") &&
+            !id.includes("trunk") &&
+            !id.includes("primary") &&
+            !id.includes("secondary") &&
+            !id.includes("tertiary") &&
+            !id.includes("path") &&
+            !id.includes("pedestrian") &&
+            !id.includes("steps");
+
+          if (isLocalStreetLayerId) {
             targets.local.add(layerId);
+            continue;
+          }
+
+          if (id.includes("path") || id.includes("pedestrian") || id.includes("steps")) {
+            targets.paths.add(layerId);
           }
         }
         return {
@@ -6055,49 +6650,9 @@
       }
 
       function getHighwayVisibilityTargets() {
-        if (!map) {
-          return {
-            major: HIGHWAY_MAJOR_LAYER_IDS.filter((layerId) => !/label/i.test(layerId)),
-            minor: HIGHWAY_MINOR_LAYER_IDS.slice(),
-          };
-        }
-
-        const targets = {
-          major: new Set(),
-          minor: new Set(),
-        };
-
-        const layers = map?.getStyle?.()?.layers || [];
-        for (const layer of layers) {
-          const layerId = layer?.id;
-          if (!layerId) continue;
-          const id = String(layerId).toLowerCase();
-
-          if (layer?.type !== "line") continue;
-          if (isMinorHighwayLayer(id)) {
-            targets.minor.add(layerId);
-            continue;
-          }
-
-          if (isMotorwayLayer(id) || isTrunkLayer(id)) {
-            targets.major.add(layerId);
-          }
-        }
-
-        if (!targets.major.size) {
-          for (const layerId of HIGHWAY_MAJOR_LAYER_IDS) {
-            if (!/label/i.test(layerId)) targets.major.add(layerId);
-          }
-        }
-        if (!targets.minor.size) {
-          for (const layerId of HIGHWAY_MINOR_LAYER_IDS) {
-            targets.minor.add(layerId);
-          }
-        }
-
         return {
-          major: [...targets.major],
-          minor: [...targets.minor],
+          major: HIGHWAY_MAJOR_LAYER_IDS.slice(),
+          minor: HIGHWAY_MINOR_LAYER_IDS.slice(),
         };
       }
 
@@ -6110,26 +6665,43 @@
         );
       }
 
+      function applyDefaultStreetAndHighwayVisibility() {
+        const streetTargets = getStreetVisibilityTargets();
+        let changed = 0;
+
+        for (const layerId of streetTargets.secondary) {
+          const baseFilter = getBaseLayerFilter(layerId);
+          const nextFilter = baseFilter ?? null;
+          if (setLayerFilter(layerId, nextFilter)) changed += 1;
+        }
+
+        changed += setLayerVisibilityByIds(
+          [
+            ...streetTargets.primary,
+            ...streetTargets.secondary,
+            ...streetTargets.local,
+            ...streetTargets.paths,
+            ...HIGHWAY_MAJOR_LAYER_IDS,
+            ...HIGHWAY_MINOR_LAYER_IDS,
+          ],
+          false
+        );
+        changed += setPlaceLayerHiddenByIds(streetTargets.labels, false);
+        return changed;
+      }
+
       function applyRouteMarkerVisibility() {
         return setExistingLayerVisibilityByIds(ROUTE_MARKER_LAYER_IDS, !routeMarkersVisible);
       }
 
       function applyStreetVisibility() {
         const targets = getStreetVisibilityTargets();
-        let secondaryCount = 0;
-        for (const layerId of targets.secondary) {
-          const baseFilter = getBaseLayerFilter(layerId);
-          const nextFilter = baseFilter ?? null;
-          if (setLayerFilter(layerId, nextFilter)) secondaryCount += 1;
-          if (setLayerVisibility(layerId, false)) secondaryCount += 1;
-        }
-
         const anyStreetVisible =
-          primaryStreetsVisible || localStreetsVisible || Boolean(targets.paths.length) || Boolean(targets.secondary.length);
+          primaryStreetsVisible || secondaryStreetsVisible || localStreetsVisible;
 
         return (
           setLayerVisibilityByIds(targets.primary, !primaryStreetsVisible) +
-          secondaryCount +
+          setLayerVisibilityByIds(targets.secondary, !secondaryStreetsVisible) +
           setLayerVisibilityByIds(targets.local, !localStreetsVisible) +
           setLayerVisibilityByIds(targets.paths, false) +
           setPlaceLayerHiddenByIds(targets.labels, !(streetLabelsVisible && anyStreetVisible))
@@ -6138,18 +6710,19 @@
 
       function saveStreetVisibilityState() {
         localStorage.setItem(STREET_PRIMARY_VISIBLE_KEY, String(primaryStreetsVisible));
+        localStorage.setItem(STREET_SECONDARY_VISIBLE_KEY, String(secondaryStreetsVisible));
         localStorage.setItem(STREET_LOCAL_VISIBLE_KEY, String(localStreetsVisible));
         localStorage.setItem(STREET_LABELS_VISIBLE_KEY, String(streetLabelsVisible));
         const legacyMode =
-          primaryStreetsVisible && localStreetsVisible
+          primaryStreetsVisible && secondaryStreetsVisible && localStreetsVisible
             ? "all"
-            : primaryStreetsVisible && !localStreetsVisible
+            : primaryStreetsVisible && !secondaryStreetsVisible && !localStreetsVisible
               ? "primary"
-              : !primaryStreetsVisible && !localStreetsVisible
+              : !primaryStreetsVisible && !secondaryStreetsVisible && !localStreetsVisible
                 ? "none"
                 : "custom";
         localStorage.setItem(STREET_VISIBILITY_KEY, legacyMode);
-        localStorage.setItem(MINOR_STREETS_HIDDEN_KEY, String(!localStreetsVisible));
+        localStorage.setItem(MINOR_STREETS_HIDDEN_KEY, String(!(secondaryStreetsVisible || localStreetsVisible)));
       }
 
       function getPlaceVisibilityTargets() {
@@ -6235,10 +6808,6 @@
           setPlaceLayerHiddenByIds(otherTargets, !otherPlacesVisible) +
           setStateLayerHiddenByIds(targets.state, !stateNamesVisible)
         );
-      }
-
-      function getTrainMapModeLabel() {
-        return trainMapMode === "lines" ? "stops + rail lines" : "stops only";
       }
 
       function hexToRgb(color) {
@@ -6402,6 +6971,10 @@
         }
       }
 
+      function isNonPoiNatureLabelHaystack(haystack = "") {
+        return /natural[-_]?label|landuse_overlay|nature[-_ ]?reserve|national[-_ ]?park/.test(haystack);
+      }
+
       function getPoiVisibilityTargets() {
         if (!map) return [];
 
@@ -6423,12 +6996,13 @@
 
           const isExcluded =
             /road|shield|settlement|place[-_]?label|state[-_]?label|country|continent|admin/.test(haystack) ||
-            /railway|subway|bus|ferry|aerialway/.test(haystack);
+            /railway|subway|bus|ferry|aerialway/.test(haystack) ||
+            isNonPoiNatureLabelHaystack(haystack);
 
           if (isExcluded) continue;
 
           const isPoiLayer =
-            /poi|point[-_ ]of[-_ ]interest|landmark|attraction|museum|gallery|library|school|hospital|airport|park|playground|stadium|theatre|theater|university|college|campus|cemetery|golf|restaurant|shop|zoo|aquarium|natural[-_]?label|landuse_overlay/.test(haystack);
+            /poi|point[-_ ]of[-_ ]interest|landmark|attraction|museum|gallery|library|school|hospital|airport|park|playground|stadium|theatre|theater|university|college|campus|cemetery|golf|restaurant|shop|zoo|aquarium/.test(haystack);
 
           if (isPoiLayer || isTransitPoiCandidate) {
             poiLayers.add(layer.id);
@@ -6473,9 +7047,10 @@
           const isRoute = routeMarkerSet.has(layer.id);
           const excludedByRegex =
             /road|shield|settlement|place[-_]?label|state[-_]?label|country|continent|admin/.test(haystack) ||
-            /railway|subway|bus|ferry|aerialway/.test(haystack);
+            /railway|subway|bus|ferry|aerialway/.test(haystack) ||
+            isNonPoiNatureLabelHaystack(haystack);
           const matchesPoi =
-            /poi|point[-_ ]of[-_ ]interest|landmark|attraction|museum|gallery|library|school|hospital|airport|park|playground|stadium|theatre|theater|university|college|campus|cemetery|golf|restaurant|shop|zoo|aquarium|natural[-_]?label|landuse_overlay/.test(haystack);
+            /poi|point[-_ ]of[-_ ]interest|landmark|attraction|museum|gallery|library|school|hospital|airport|park|playground|stadium|theatre|theater|university|college|campus|cemetery|golf|restaurant|shop|zoo|aquarium/.test(haystack);
           return {
             id: layer.id,
             sourceLayer: layer["source-layer"] || "",
@@ -6792,6 +7367,65 @@
         }
       }
 
+      async function applyPendingProjectViewportAndWait() {
+        const hadPendingViewport = Boolean(pendingProjectViewport);
+        applyPendingProjectViewport();
+        if (hadPendingViewport) {
+          await waitForMapIdle(2200);
+        }
+      }
+
+      function waitForNextFrame() {
+        return new Promise((resolve) => window.requestAnimationFrame(() => resolve()));
+      }
+
+      function clearProjectStateStorageForImport() {
+        for (const key of PROJECT_RUNTIME_STATE_KEYS) {
+          localStorage.removeItem(key);
+        }
+      }
+
+      function resetRuntimeProjectStateForImport() {
+        currentImportRevision += 1;
+        pendingProjectViewport = null;
+        pendingImportedHighlightCommit = false;
+        highlightApplyQueued = false;
+        basemapApplyQueued = false;
+        visibilityApplyQueued = false;
+        committedHighlightRef = "";
+        captureRouteNeedsRecapture = false;
+        lastCapturedHighlightViewportKey = "";
+        hoveredLiveShieldKey = "";
+        capturedRoute = null;
+        capturedRouteRef = "";
+        savedHighlights = [];
+        placeMarkers = [];
+        drawnShapes = [];
+        frozenShields = [];
+        frozenPlaces = [];
+        frozenPois = [];
+        selectedFrozenShieldId = "";
+        selectedFrozenPlaceId = "";
+        selectedFrozenPoiId = "";
+        shieldFreezeModeEnabled = false;
+        placeFreezeModeEnabled = false;
+        poiFreezeModeEnabled = false;
+        distanceMeasureModeEnabled = false;
+        distanceMeasurePoints = [];
+        distanceMeasureRequestId += 1;
+        if (eraseMode) {
+          setEraseMode(false);
+        }
+        if (map?.isStyleLoaded()) {
+          clearHighlightLayers();
+          clearPowerLinesOverlay();
+          updateCaptureRouteUi();
+          renderSavedHighlightsList();
+          map.triggerRepaint();
+        }
+        return currentImportRevision;
+      }
+
       function setPowerLinesMode(nextEnabled) {
         const shouldEnable = Boolean(nextEnabled);
         if (shouldEnable === powerLinesVisible) return;
@@ -6810,10 +7444,14 @@
 
       function applyVisibilityToggles() {
         if (!map || !map.isStyleLoaded()) return;
-        applyStreetVisibility();
+        if (isSatellitePreset()) {
+          applyDefaultStreetAndHighwayVisibility();
+        } else {
+          applyStreetVisibility();
+          applyHighwayVisibility();
+        }
         setLayerVisibilityByIds(BUILDING_LAYER_IDS, !buildingsVisible);
         applyPoiVisibility();
-        applyHighwayVisibility();
         applyRouteMarkerVisibility();
         applyPlaceNameVisibility();
         applyTrainMapVisibility();
@@ -6830,6 +7468,7 @@
       function setLandMode(nextMode) {
         const targetMode = nextMode === "flatten" ? "flatten" : "off";
         const wasOff = landMode === "off";
+        const isSimpleGrey = isSimpleGreyPreset();
         landMode = targetMode;
         localStorage.setItem(LAND_MODE_KEY, landMode);
 
@@ -6840,8 +7479,13 @@
           updateLandModeButtons();
           saveBasemapShades();
           if (map?.isStyleLoaded()) {
-            applyBasemapShades();
-            applyBuiltLandVisibility();
+            if (isSimpleGrey) {
+              map.setStyle(getMapStyleUrl(), { config: getMapStyleConfig() });
+              void replayRuntimeOverlaysAfterStyleChange();
+            } else {
+              applyBasemapShades();
+              applyBuiltLandVisibility();
+            }
           }
           setStatus("Restored the previous land colors.");
           return;
@@ -6876,6 +7520,9 @@
       function handleLandColorChange(value) {
         if (landMode !== "off") {
           applyFlattenedLandPalette(value);
+        } else {
+          landColorEl.value = value;
+          syncLandTonePalette(value);
         }
         saveBasemapShades();
         if (map?.isStyleLoaded()) {
@@ -6907,27 +7554,17 @@
           id.includes("motorway-link") ||
           id.includes("trunk-link") ||
           id.includes("road-number-shield") ||
-          id.includes("road-exit-shield") ||
-          id.includes("road-intersection")
+          id.includes("road-exit-shield")
         );
-      }
-
-      function isMotorwayLayer(id) {
-        return id.includes("motorway") || id.includes("freeway") || id.includes("expressway");
       }
 
       function isTrunkLayer(id) {
         return id.includes("trunk");
       }
 
-      function isMinorHighwayLayer(id) {
-        return id.includes("major-link") || id.includes("motorway-link") || id.includes("trunk-link");
-      }
-
       function isPrimaryStreetLayer(id) {
         return (
           id.includes("primary") ||
-          id.includes("secondary-tertiary") ||
           id.includes("bridge-primary") ||
           id.includes("tunnel-primary")
         ) && !isHighwayLayer(id);
@@ -6935,6 +7572,33 @@
 
       function isTrainLineLayer(id) {
         return TRAIN_MAP_ALL_LINE_LAYER_IDS.includes(id);
+      }
+
+      function isLocalStreetVisibilityLayer(id) {
+        return (
+          (
+            id.includes("road-minor") ||
+            id.includes("minor") ||
+            id.includes("road-street") ||
+            id.includes("street") ||
+            id.includes("residential") ||
+            id.includes("living-street") ||
+            id.includes("service")
+          ) &&
+          !id.includes("secondary-tertiary") &&
+          !id.includes("secondary") &&
+          !id.includes("tertiary") &&
+          !id.includes("primary") &&
+          !id.includes("motorway") &&
+          !id.includes("trunk") &&
+          !id.includes("path") &&
+          !id.includes("pedestrian") &&
+          !id.includes("steps") &&
+          !id.includes("label") &&
+          !id.includes("shield") &&
+          !id.includes("exit") &&
+          !id.includes("junction")
+        );
       }
 
       function isStreetLayer(id) {
@@ -6956,7 +7620,7 @@
         const group = String(metadata["mapbox:group"] || "").toLowerCase();
         const haystack = `${id} ${sourceLayer} ${featureComponent} ${group}`;
         return (
-          /landcover|landuse|natural|vegetation|forest|wood|tree|wetland|marsh|swamp|bog|grass|scrub|shrub|heath|meadow|orchard|farmland|field/.test(haystack)
+          /landcover|natural|vegetation|forest|wood|tree|wetland|marsh|swamp|bog|grass|scrub|shrub|heath|meadow|orchard|farmland|field/.test(haystack)
         );
       }
 
@@ -6967,18 +7631,22 @@
         return /(\b|[-_])(park(?!ing|way)|recreation|playground|sports?[-_]?center|cemetery|golf|pitch|garden|dog[-_]?park|nature[-_]?reserve|national[-_]?park)(\b|[-_])/.test(haystack);
       }
 
-      function isFlattenedLandcoverLayer(id, sourceLayer = "", metadata = {}) {
-        return isNaturalLandcoverLayer(id, sourceLayer, metadata) || isParkLayer(id, sourceLayer, metadata);
-      }
-
       function isFlattenedBuiltLand(id, sourceLayer = "", metadata = {}) {
         const featureComponent = String(metadata["mapbox:featureComponent"] || "").toLowerCase();
         const group = String(metadata["mapbox:group"] || "").toLowerCase();
         const haystack = `${id} ${sourceLayer} ${featureComponent} ${group}`;
+        const isGreenLanduse =
+          isParkLayer(id, sourceLayer, metadata) ||
+          /natural|vegetation|forest|wood|tree|wetland|marsh|swamp|bog|grass|scrub|shrub|heath|meadow|orchard|farmland|field/.test(haystack);
         return (
-          sourceLayer === "landuse" ||
           sourceLayer === "structure" ||
-          /urban|residential|commercial|industrial|built|settlement|suburb|city|town|village|neighbourhood|neighborhood|airport|campus|hospital|university|landuse|land-structure|facility/.test(haystack)
+          (
+            !isGreenLanduse &&
+            (
+              sourceLayer === "landuse" ||
+              /urban|residential|commercial|industrial|built|settlement|suburb|city|town|village|neighbourhood|neighborhood|airport|campus|hospital|university|land-structure|facility/.test(haystack)
+            )
+          )
         );
       }
 
@@ -7019,10 +7687,32 @@
         } catch {}
       }
 
+      function getPaintDefault(layerId, property, fallback) {
+        const cacheKey = `${layerId}:${property}`;
+        if (mapPaintDefaults.has(cacheKey)) {
+          return mapPaintDefaults.get(cacheKey);
+        }
+        const currentValue = map?.getPaintProperty?.(layerId, property);
+        const nextValue = currentValue == null ? fallback : deepCloneStyleValue(currentValue);
+        mapPaintDefaults.set(cacheKey, nextValue);
+        return nextValue;
+      }
+
+      function setCachedPaintProperty(layerId, property, value, fallback = 1) {
+        if (!map || !hasStyleLayer(layerId)) return;
+        try {
+          getPaintDefault(layerId, property, fallback);
+          map.setPaintProperty(layerId, property, value);
+        } catch {}
+      }
+
       function applyBasemapShades() {
         if (!map || !map.isStyleLoaded()) return;
 
         const shades = readBasemapShades();
+        const hideTerrainRelief = shouldHideTerrainReliefForPreset();
+        const preserveDefaultGreyBasemapStyling = shouldPreserveDefaultGreyBasemapStyling();
+        const preserveDefaultRoadStyling = isSatellitePreset() || preserveDefaultGreyBasemapStyling;
         const style = map.getStyle();
 
         for (const layer of style.layers || []) {
@@ -7030,12 +7720,37 @@
           const sourceLayer = String(layer["source-layer"] || "").toLowerCase();
           const metadata = layer.metadata || {};
 
-          if (layer.type === "background" && id.includes("background")) {
+          if (layer.type === "background") {
+            if (preserveDefaultGreyBasemapStyling) continue;
             try { map.setPaintProperty(layer.id, "background-color", shades.land); } catch {}
             continue;
           }
 
           if (layer.type === "fill") {
+            if (preserveDefaultGreyBasemapStyling) {
+              continue;
+            }
+            if (isBuildingLayer(id)) {
+              try { map.setPaintProperty(layer.id, "fill-color", shades.buildings); } catch {}
+              setCachedPaintProperty(layer.id, "fill-outline-color", "rgba(0,0,0,0)", "rgba(0,0,0,0)");
+              continue;
+            }
+
+            const isWaterLayer =
+              id.includes("water") || id.includes("ocean") || id.includes("lake") || id.includes("bay");
+            const isFlatLandTextureLayer =
+              !isWaterLayer &&
+              (
+                id.includes("landcover") ||
+                id.includes("land") ||
+                sourceLayer === "landuse" ||
+                sourceLayer === "landcover" ||
+                sourceLayer === "structure" ||
+                isNaturalLandcoverLayer(id, sourceLayer, metadata) ||
+                isParkLayer(id, sourceLayer, metadata) ||
+                isFlattenedBuiltLand(id, sourceLayer, metadata) ||
+                isBuildingLayer(id)
+              );
             const shouldFlattenLand =
               landMode === "flatten" &&
               (
@@ -7044,6 +7759,19 @@
                 isParkLayer(id, sourceLayer, metadata) ||
                 isFlattenedBuiltLand(id, sourceLayer, metadata)
               );
+            if (landMode === "flatten" && isFlatLandTextureLayer) {
+              setCachedPaintProperty(layer.id, "fill-color", shades.land, shades.land);
+              setCachedPaintProperty(layer.id, "fill-opacity", id.includes("land") ? 1 : 0, 1);
+              setCachedPaintProperty(layer.id, "fill-outline-color", shades.land, shades.land);
+              continue;
+            }
+            if (isFlatLandTextureLayer) {
+              setCachedPaintProperty(layer.id, "fill-opacity", getPaintDefault(layer.id, "fill-opacity", 1), 1);
+              const outlineDefault = getPaintDefault(layer.id, "fill-outline-color", undefined);
+              if (outlineDefault !== undefined) {
+                setCachedPaintProperty(layer.id, "fill-outline-color", outlineDefault, undefined);
+              }
+            }
             if (shouldFlattenLand) {
               try { map.setPaintProperty(layer.id, "fill-color", shades.land); } catch {}
               continue;
@@ -7051,6 +7779,11 @@
 
             if (id.includes("landcover")) {
               try { map.setPaintProperty(layer.id, "fill-color", shades.landcover); } catch {}
+              continue;
+            }
+
+            if (isFlattenedBuiltLand(id, sourceLayer, metadata)) {
+              try { map.setPaintProperty(layer.id, "fill-color", shades.land); } catch {}
               continue;
             }
 
@@ -7074,20 +7807,82 @@
               continue;
             }
 
-            if (id.includes("water") || id.includes("ocean") || id.includes("lake") || id.includes("bay")) {
+            if (isWaterLayer) {
               try { map.setPaintProperty(layer.id, "fill-color", shades.water); } catch {}
               continue;
             }
           }
 
           if (layer.type === "fill-extrusion" && isBuildingLayer(id)) {
+            if (preserveDefaultGreyBasemapStyling) {
+              continue;
+            }
+            if (landMode === "flatten") {
+              setCachedPaintProperty(layer.id, "fill-extrusion-color", shades.land, shades.land);
+              setCachedPaintProperty(layer.id, "fill-extrusion-opacity", 0, 1);
+              continue;
+            }
+            setCachedPaintProperty(
+              layer.id,
+              "fill-extrusion-opacity",
+              getPaintDefault(layer.id, "fill-extrusion-opacity", 1),
+              1
+            );
             try { map.setPaintProperty(layer.id, "fill-extrusion-color", shades.buildings); } catch {}
             continue;
           }
 
           if (layer.type === "line") {
+            if (isBuildingLayer(id)) {
+              setCachedPaintProperty(layer.id, "line-opacity", 0, 1);
+              continue;
+            }
+
             if (isTrainLineLayer(id)) {
               continue;
+            }
+
+            if (preserveDefaultRoadStyling && (isHighwayLayer(id) || isPrimaryStreetLayer(id) || isStreetLayer(id))) {
+              if (!isSatellitePreset() && isHighwayLayer(id)) {
+                // Keep highway styling controls active for grey while preserving default street styling.
+              } else {
+                continue;
+              }
+            }
+
+            if (preserveDefaultGreyBasemapStyling && !isHighwayLayer(id)) {
+              continue;
+            }
+
+            const isFlatLandLineLayer =
+              !isHighwayLayer(id) &&
+              !isPrimaryStreetLayer(id) &&
+              !isStreetLayer(id) &&
+              !id.includes("water") &&
+              !id.includes("river") &&
+              !id.includes("stream") &&
+              (
+                id.includes("land") ||
+                id.includes("park") ||
+                id.includes("pitch") ||
+                sourceLayer === "landuse" ||
+                sourceLayer === "landcover" ||
+                sourceLayer === "structure" ||
+                isNaturalLandcoverLayer(id, sourceLayer, metadata) ||
+                isParkLayer(id, sourceLayer, metadata) ||
+                isFlattenedBuiltLand(id, sourceLayer, metadata)
+              );
+            if (isFlatLandLineLayer) {
+              setCachedPaintProperty(
+                layer.id,
+                "line-opacity",
+                landMode === "flatten" ? 0 : getPaintDefault(layer.id, "line-opacity", 1),
+                1
+              );
+              if (landMode === "flatten") {
+                setCachedPaintProperty(layer.id, "line-color", shades.land, shades.land);
+              }
+              if (landMode === "flatten") continue;
             }
 
             if (isHighwayLayer(id)) {
@@ -7134,7 +7929,7 @@
             !isHighlightOverlayLayer(layer) &&
             (id.includes("hillshade") || id.includes("terrain") || id.includes("contour") || id.includes("elevation") || id.includes("shadow"));
 
-          if (landMode === "flatten" && isTerrainReliefLayer) {
+          if ((landMode === "flatten" || hideTerrainRelief) && isTerrainReliefLayer) {
             try {
               if (layer.type === "fill") map.setPaintProperty(layer.id, "fill-opacity", 0);
               if (layer.type === "line") map.setPaintProperty(layer.id, "line-opacity", 0);
@@ -7307,7 +8102,7 @@
         return {
           id: String(entry.id || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`),
           ref: String(entry.ref || entry.routeRef || ""),
-          routeRef: String(entry.routeRef || normalizeRef(entry.ref || "")),
+          routeRef: normalizeRef(entry.routeRef || entry.ref || ""),
           style: {
             color: style.color || colorEl.value,
             strokeWeight: Number(style.strokeWeight) || 1,
@@ -7318,6 +8113,16 @@
 
       function pointInRect(point, rect) {
         return point.x >= rect.minX && point.x <= rect.maxX && point.y >= rect.minY && point.y <= rect.maxY;
+      }
+
+      function expandRect(rect, padding = 0) {
+        const amount = Math.max(0, Number(padding) || 0);
+        return {
+          minX: rect.minX - amount,
+          minY: rect.minY - amount,
+          maxX: rect.maxX + amount,
+          maxY: rect.maxY + amount,
+        };
       }
 
       function segmentsIntersect(a, b, c, d) {
@@ -7368,6 +8173,14 @@
       }
 
       function setEraseMode(enabled) {
+        const hasCapturedCurrentRef = Boolean(currentCapturedRouteMatches(highwayEl.value.trim()));
+        if (enabled && !hasCapturedCurrentRef) {
+          eraseMode = false;
+          eraseBtn.disabled = true;
+          eraseBtn.textContent = "Erase box";
+          eraseBtn.classList.remove("active");
+          return;
+        }
         eraseMode = enabled;
         eraseBtn.textContent = enabled ? "Stop erase" : "Erase box";
         eraseBtn.classList.toggle("active", enabled);
@@ -7390,51 +8203,94 @@
           return;
         }
 
-        const remaining = [];
-        let removed = 0;
+        const targetRect = expandRect(rect, 6);
+        const capturedBbox = [
+          [targetRect.minX, targetRect.minY],
+          [targetRect.maxX, targetRect.maxY],
+        ];
+        const capturedRendered = map?.isStyleLoaded?.()
+          ? map.queryRenderedFeatures(capturedBbox, { layers: [CAPTURED_LAYER_LINE] })
+          : [];
+        const capturedRemovalSignatures = new Set();
+        for (const feature of capturedRendered) {
+          for (const chain of flattenGeometry(feature.geometry)) {
+            if (!chainIntersectsRect(chain, targetRect)) continue;
+            capturedRemovalSignatures.add(normalizeChainSignature(chain));
+          }
+        }
+        const remainingChains = [];
+        let removedCaptured = 0;
 
         for (const feature of capturedRoute.features || []) {
-          const chains = flattenGeometry(feature.geometry);
-          const shouldRemove = chains.some((chain) => chainIntersectsRect(chain, rect));
-          if (shouldRemove) {
-            removed += 1;
-          } else {
-            remaining.push(feature);
+          for (const chain of flattenGeometry(feature.geometry)) {
+            const signature = normalizeChainSignature(chain);
+            if (capturedRemovalSignatures.has(signature) || chainIntersectsRect(chain, targetRect)) {
+              removedCaptured += 1;
+              continue;
+            }
+            remainingChains.push(chain);
           }
         }
 
-        if (!removed) {
-          setStatus("No saved route pieces overlapped that box.", true);
+        const removedLive = eraseLiveHighlightInRect(targetRect);
+
+        if (!removedCaptured && !removedLive) {
+          setStatus("No highlighted route pieces overlapped that box.", true);
           return;
         }
 
-        if (!remaining.length) {
-          clearCapturedRoute();
+        if (removedCaptured && !remainingChains.length) {
+          clearCapturedRoute({ clearLiveExclusions: false });
           applyHighlight();
-          setStatus("Erased the entire saved capture.");
+          if (removedLive) {
+            setStatus(`Erased the entire saved capture and removed ${removedLive} live branch${removedLive === 1 ? "" : "es"} from this capture flow.`);
+          } else {
+            setStatus("Erased the entire saved capture.");
+          }
           return;
         }
 
-        saveCapturedRoute(highwayEl.value.trim(), {
-          type: "FeatureCollection",
-          features: remaining,
-        });
+        if (removedCaptured) {
+          saveCapturedRoute(highwayEl.value.trim(), {
+            type: "FeatureCollection",
+            features: remainingChains.map((chain, index) => makeCapturedFeature(chain, highwayEl.value.trim(), index)),
+          });
+        }
         applyHighlight();
-        setStatus(`Erased ${removed} saved route piece${removed === 1 ? "" : "s"} inside the box.`);
+        const messageParts = [];
+        if (removedCaptured) {
+          messageParts.push(`${removedCaptured} saved route piece${removedCaptured === 1 ? "" : "s"}`);
+        }
+        if (removedLive) {
+          messageParts.push(`${removedLive} live branch${removedLive === 1 ? "" : "es"}`);
+        }
+        setStatus(`Erased ${messageParts.join(" and ")} inside the box.`);
       }
 
       function saveCapturedRoute(ref, geojson) {
         capturedRoute = geojson;
         capturedRouteRef = normalizeRef(ref);
+        committedHighlightRef = capturedRouteRef;
+        captureRouteNeedsRecapture = false;
+        lastCapturedHighlightViewportKey = getHighlightViewportKey();
         localStorage.setItem(CAPTURED_ROUTE_KEY, JSON.stringify(geojson));
         localStorage.setItem(CAPTURED_ROUTE_REF_KEY, capturedRouteRef);
+        updateCaptureRouteUi();
       }
 
-      function clearCapturedRoute() {
+      function clearCapturedRoute(options = {}) {
+        const { clearLiveExclusions = true } = options;
+        const previousRef = capturedRouteRef || highwayEl.value.trim();
         capturedRoute = null;
         capturedRouteRef = "";
+        captureRouteNeedsRecapture = false;
+        lastCapturedHighlightViewportKey = "";
+        if (clearLiveExclusions) {
+          clearLiveHighlightExclusions(previousRef);
+        }
         localStorage.removeItem(CAPTURED_ROUTE_KEY);
         localStorage.removeItem(CAPTURED_ROUTE_REF_KEY);
+        updateCaptureRouteUi();
       }
 
       function saveSavedHighlights() {
@@ -7496,17 +8352,6 @@
         }
       }
 
-      function loadSavedHighlights() {
-        const raw = localStorage.getItem(SAVED_HIGHLIGHTS_KEY);
-        if (!raw) return [];
-        try {
-          const parsed = JSON.parse(raw);
-          return Array.isArray(parsed) ? parsed : [];
-        } catch {
-          return [];
-        }
-      }
-
       function makeSavedHighlightId(entry) {
         return String(entry?.id || entry?.key || `${entry?.routeRef || "saved"}-${entry?.ref || ""}`);
       }
@@ -7528,6 +8373,37 @@
           if (!sourceId.startsWith(savedSourcePrefix)) continue;
           if (map.getSource(sourceId)) map.removeSource(sourceId);
         }
+      }
+
+      function syncSavedHighlightLayer(entry) {
+        if (!map || !map.isStyleLoaded()) return;
+        const saved = normalizeSavedHighlight(entry);
+        if (!saved) return;
+
+        const id = makeSavedHighlightId(saved);
+        const sourceId = `${CAPTURED_ROUTE_SOURCE}-${id}`;
+        const lineId = `${id}-line`;
+        const strokeWeight = Math.max(0.1, saved.style.strokeWeight || 1);
+        const source = map.getSource(sourceId);
+
+        if (!source || !map.getLayer(lineId)) {
+          paintSavedHighlight(saved);
+          return;
+        }
+
+        try {
+          source.setData(saved.geojson);
+        } catch {}
+        try {
+          map.setPaintProperty(lineId, "line-color", saved.style.color);
+        } catch {}
+        try {
+          map.setPaintProperty(
+            lineId,
+            "line-width",
+            scaleWidthStops([0, 0.5, 4, 2, 7, 4, 10, 6, 13, 9, 16, 12], strokeWeight)
+          );
+        } catch {}
       }
 
       function makeSavedHighlightEntry() {
@@ -7555,14 +8431,26 @@
           return;
         }
 
+        const savedRefLabel = String(entry.ref || entry.routeRef || highwayEl.value.trim()).trim();
         savedHighlights.push(entry);
         saveSavedHighlights();
         clearCapturedRoute();
+        highwayEl.value = savedRefLabel;
         if (map?.isStyleLoaded()) {
           applyHighlight();
           renderSavedHighlightsList();
         }
-        setStatus(`Saved "${entry.ref || highwayEl.value.trim()}" as a separate highlight layer.`);
+        window.setTimeout(() => {
+          if (highwayEl.value.trim() === savedRefLabel) {
+            highwayEl.value = "";
+            committedHighlightRef = "";
+            if (map?.isStyleLoaded()) {
+              applyHighlight();
+              updateCaptureRouteUi();
+            }
+          }
+        }, 900);
+        setStatus(`Saved "${savedRefLabel}" as a separate highlight layer.`);
       }
 
       function autoSaveCapturedHighlightBeforeSearch(nextRef) {
@@ -7620,17 +8508,6 @@
           renderSavedHighlightsList();
         }
         setStatus("Cleared all saved highlights and reset the current capture.");
-      }
-
-      function loadFrozenShields() {
-        const raw = localStorage.getItem(FROZEN_SHIELDS_KEY);
-        if (!raw) return [];
-        try {
-          const parsed = JSON.parse(raw);
-          return Array.isArray(parsed) ? parsed : [];
-        } catch {
-          return [];
-        }
       }
 
       function saveFrozenShields() {
@@ -7791,10 +8668,6 @@
         };
       }
 
-      function getFrozenShieldSourceFeatureId(entry) {
-        return String(entry?.id || "");
-      }
-
       function getFrozenShieldBaseLayer(layerId) {
         return getMapStyleLayers().find((entry) => entry?.id === layerId && entry?.type === "symbol") || null;
       }
@@ -7855,8 +8728,8 @@
         layout["icon-ignore-placement"] = true;
         delete layout["symbol-spacing"];
         delete layout["symbol-avoid-edges"];
-        layout["text-size"] = scaleStyleValue(layout["text-size"], frozenShieldScale, 16);
-        layout["icon-size"] = scaleStyleValue(layout["icon-size"], frozenShieldScale, 1);
+        layout["text-size"] = scaleStyleValue(FROZEN_SHIELD_RENDER_DEFAULTS.textSize, frozenShieldScale, FROZEN_SHIELD_RENDER_DEFAULTS.textSize);
+        layout["icon-size"] = scaleStyleValue(FROZEN_SHIELD_RENDER_DEFAULTS.iconSize, frozenShieldScale, FROZEN_SHIELD_RENDER_DEFAULTS.iconSize);
 
         return {
           id: frozenShieldSymbolLayerId(layerId),
@@ -7986,9 +8859,16 @@
         for (const layerId of ROUTE_MARKER_LAYER_IDS) {
           const frozenLayerId = frozenShieldSymbolLayerId(layerId);
           if (!map.getLayer(frozenLayerId)) continue;
-          const baseLayer = getFrozenShieldBaseLayer(layerId);
-          const textSize = scaleStyleValue(baseLayer?.layout?.["text-size"], frozenShieldScale, 16);
-          const iconSize = scaleStyleValue(baseLayer?.layout?.["icon-size"], frozenShieldScale, 1);
+          const textSize = scaleStyleValue(
+            FROZEN_SHIELD_RENDER_DEFAULTS.textSize,
+            frozenShieldScale,
+            FROZEN_SHIELD_RENDER_DEFAULTS.textSize
+          );
+          const iconSize = scaleStyleValue(
+            FROZEN_SHIELD_RENDER_DEFAULTS.iconSize,
+            frozenShieldScale,
+            FROZEN_SHIELD_RENDER_DEFAULTS.iconSize
+          );
           try { map.setLayoutProperty(frozenLayerId, "text-size", textSize); } catch {}
           try { map.setLayoutProperty(frozenLayerId, "icon-size", iconSize); } catch {}
         }
@@ -8558,17 +9438,6 @@
         localStorage.setItem(FROZEN_PLACES_KEY, JSON.stringify(frozenPlaces));
       }
 
-      function loadFrozenPois() {
-        const raw = localStorage.getItem(FROZEN_POIS_KEY);
-        if (!raw) return [];
-        try {
-          const parsed = JSON.parse(raw);
-          return Array.isArray(parsed) ? parsed : [];
-        } catch {
-          return [];
-        }
-      }
-
       function saveFrozenPois() {
         localStorage.setItem(FROZEN_POIS_KEY, JSON.stringify(frozenPois));
       }
@@ -8670,12 +9539,16 @@
           properties.name_script ||
           "";
         const label = String(rawLabel).trim() || "POI";
-        const layerIds = Array.isArray(entry.layerIds)
+        const rawLayerIds = Array.isArray(entry.layerIds)
           ? entry.layerIds.map((value) => String(value || "").trim()).filter(Boolean)
           : String(entry.layerId || "").trim()
             ? [String(entry.layerId || "").trim()]
             : [];
-        const primaryLayerId = String(entry.layerId || layerIds[0] || "");
+        const validPoiLayerIds = map?.isStyleLoaded?.() ? new Set(getPoiVisibilityTargets()) : null;
+        const layerIds = validPoiLayerIds
+          ? rawLayerIds.filter((layerId) => validPoiLayerIds.has(layerId))
+          : rawLayerIds;
+        const primaryLayerId = String(layerIds[0] || "");
 
         return {
           id: String(entry.id || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`),
@@ -8864,7 +9737,41 @@
 
       function buildFrozenPlaceSymbolLayer(layerId) {
         const sourceLayer = getFrozenPlaceBaseLayer(layerId);
-        if (!sourceLayer) return null;
+        if (!sourceLayer) {
+          return {
+            id: frozenPlaceSymbolLayerId(layerId),
+            type: "symbol",
+            source: FROZEN_PLACES_SOURCE,
+            filter: ["==", ["get", "layerId"], layerId],
+            layout: {
+              "symbol-placement": "point",
+              "text-field": [
+                "coalesce",
+                ["get", "label"],
+                ["get", "name_en"],
+                ["get", "name"],
+                "Place",
+              ],
+              "text-font": ["DIN Pro Medium", "Arial Unicode MS Regular"],
+              "text-size": 14,
+              "text-line-height": 1.1,
+              "text-max-width": 8,
+              "text-anchor": "center",
+              "text-justify": "center",
+              "text-allow-overlap": true,
+              "text-ignore-placement": true,
+              "icon-allow-overlap": true,
+              "icon-ignore-placement": true,
+            },
+            paint: {
+              "text-color": FROZEN_PLACE_STYLE_DEFAULTS.color,
+              "text-halo-color": FROZEN_PLACE_STYLE_DEFAULTS.outlineColor,
+              "text-halo-width": FROZEN_PLACE_STYLE_DEFAULTS.outlineWidth,
+              "text-halo-blur": 0.8,
+            },
+            minzoom: 0,
+          };
+        }
 
         const layout = deepCloneStyleValue(sourceLayer.layout || {});
         const paint = deepCloneStyleValue(sourceLayer.paint || {});
@@ -9867,7 +10774,7 @@
         }
       }
 
-      async function refreshProjectAfterImport(previousStylePreset) {
+      async function refreshProjectAfterImport(previousStylePreset, importRevision = currentImportRevision) {
         togglePlaceMajorBtn.checked = majorPlacesVisible;
         togglePlaceOtherBtn.checked = otherPlacesVisible;
         toggleStateNamesBtn.checked = stateNamesVisible;
@@ -9886,15 +10793,18 @@
         renderSavedHighlightsList();
         updatePenToolChip();
         normalizeBasemapAccordion();
-        updatePrintSummary();
+        if (activePanelTab === "print") {
+          updatePrintPreview();
+        }
 
         if (!map) {
           ensureMap();
           return;
         }
 
-        if (previousStylePreset !== getStylePreset()) {
-          map.setStyle(getMapStyleUrl());
+        if (shouldReloadMapStyle(previousStylePreset, getStylePreset())) {
+          map.setStyle(getMapStyleUrl(), { config: getMapStyleConfig() });
+          void replayRuntimeOverlaysAfterStyleChange();
           return;
         }
 
@@ -9910,12 +10820,10 @@
         }
         applyBasemapShades();
         scheduleVisibilityApply();
-        if (pendingImportedHighlightCommit) {
-          pendingImportedHighlightCommit = false;
-          await applyHighwaySearchHighlight({ commit: true, focusMap: false });
-        } else {
-          applyHighlight();
-        }
+        await applyPendingProjectViewportAndWait();
+        const shouldRunImportedHighlightCommit = pendingImportedHighlightCommit;
+        pendingImportedHighlightCommit = false;
+        applyHighlight();
         if (powerLinesVisible) {
           ensurePowerLinesOverlay();
           applyPowerLineStyle();
@@ -9927,14 +10835,21 @@
         renderPlaceMarkers();
         renderDrawnShapes();
         renderDrawnShapeDraft();
+        if (!routeMarkersVisible) {
+          applyRouteMarkerVisibility();
+        }
         scheduleFrozenShieldsRefresh();
         scheduleFrozenPlacesRefresh();
         scheduleFrozenPoisRefresh();
-        applyPendingProjectViewport();
+        if (shouldRunImportedHighlightCommit) {
+          await waitForNextFrame();
+          await waitForMapIdle(300);
+          await applyHighwaySearchHighlight({ commit: true, focusMap: false });
+        }
         map.triggerRepaint();
       }
 
-      function applyImportedProject(project) {
+      async function applyImportedProject(project) {
         if (!project || typeof project !== "object") {
           throw new Error("That project file is not valid JSON.");
         }
@@ -9946,11 +10861,14 @@
         }
 
         const previousStylePreset = getStylePreset();
-        const nextStylePreset = STYLE_PRESETS[project.stylePreset] ? project.stylePreset : previousStylePreset;
+        const importRevision = resetRuntimeProjectStateForImport();
+        clearProjectStateStorageForImport();
+        const nextStylePreset = normalizeStylePresetValue(project.stylePreset || previousStylePreset);
         stylePresetEl.value = nextStylePreset;
+        syncBasemapPresetShades(nextStylePreset);
 
         const highlight = project.highlight && typeof project.highlight === "object" ? project.highlight : {};
-        highwayEl.value = String(highlight.highwayRef || highwayEl.value || "I-95");
+        highwayEl.value = String(highlight.highwayRef || highlight.liveCaptureRef || highwayEl.value || "");
         const importedHighlightStyle = {
           color: String(highlight.style?.color || colorEl.value || "#2563eb"),
           strokeWeight: readProjectNumber(highlight.style?.strokeWeight, Number(strokeWeightEl.value) || 1, 0.1),
@@ -9980,7 +10898,9 @@
         const visibility = project.visibility && typeof project.visibility === "object" ? project.visibility : {};
         builtLandVisible = true;
         primaryStreetsVisible = readProjectBoolean(visibility.primaryStreetsVisible, primaryStreetsVisible);
+        secondaryStreetsVisible = readProjectBoolean(visibility.secondaryStreetsVisible, localStreetsVisible);
         localStreetsVisible = readProjectBoolean(visibility.localStreetsVisible, localStreetsVisible);
+        saveStreetVisibilityState();
         buildingsVisible = readProjectBoolean(visibility.buildingsVisible, buildingsVisible);
         poiVisible = readProjectBoolean(visibility.poiVisible, poiVisible);
         trainMapVisible = readProjectBoolean(visibility.trainMapVisible, trainMapVisible);
@@ -10075,11 +10995,17 @@
               const bounds = buildProjectViewportFallback(savedHighlights, capturedRoute);
               return bounds ? { kind: "bounds", bounds } : null;
             })();
+        if (pendingProjectViewport && map?.isStyleLoaded()) {
+          applyPendingProjectViewport();
+        }
         localStorage.removeItem(FROZEN_SHIELD_MODE_KEY);
         localStorage.removeItem(FROZEN_PLACE_MODE_KEY);
         localStorage.removeItem(FROZEN_POI_MODE_KEY);
         syncProjectStateToStorage();
-        void refreshProjectAfterImport(previousStylePreset);
+        await refreshProjectAfterImport(previousStylePreset, importRevision);
+        if (shouldShowImportedHighlightOverlay(nextStylePreset, savedHighlights)) {
+          openImportHighlightOverlay();
+        }
       }
 
       function downloadProjectExport() {
@@ -10092,12 +11018,138 @@
         if (!file) return;
         const text = await file.text();
         const parsed = JSON.parse(text);
-        applyImportedProject(parsed);
+        await applyImportedProject(parsed);
         setStatus(`Imported project from "${file.name}".`);
       }
 
       function currentCapturedRouteMatches(ref) {
         return capturedRoute && capturedRouteRef === normalizeRef(ref);
+      }
+
+      function normalizeChainSignature(chain) {
+        return JSON.stringify(
+          normalizeSegmentCoordinates(chain).map((pt) => [
+            Number(pt[0].toFixed(6)),
+            Number(pt[1].toFixed(6)),
+          ])
+        );
+      }
+
+      function getLiveHighlightExclusionSet(ref = highwayEl.value.trim(), { create = false } = {}) {
+        const key = normalizeRef(ref);
+        if (!key) return null;
+        let signatures = liveHighlightExclusionSignatures.get(key) || null;
+        if (!signatures && create) {
+          signatures = new Set();
+          liveHighlightExclusionSignatures.set(key, signatures);
+        }
+        return signatures;
+      }
+
+      function clearLiveHighlightExclusions(ref = "") {
+        const key = normalizeRef(ref);
+        if (key) {
+          liveHighlightExclusionSignatures.delete(key);
+          liveHighlightErasedChains.delete(key);
+          return;
+        }
+        liveHighlightExclusionSignatures.clear();
+        liveHighlightErasedChains.clear();
+      }
+
+      function getLiveHighlightErasedChains(ref = highwayEl.value.trim(), { create = false } = {}) {
+        const key = normalizeRef(ref);
+        if (!key) return null;
+        let chains = liveHighlightErasedChains.get(key) || null;
+        if (!chains && create) {
+          chains = [];
+          liveHighlightErasedChains.set(key, chains);
+        }
+        return chains;
+      }
+
+      function getLiveHighlightErasedGeoJSON(ref = highwayEl.value.trim()) {
+        const key = normalizeRef(ref);
+        const chains = key ? (liveHighlightErasedChains.get(key) || []) : [];
+        if (!chains.length) return null;
+        return {
+          type: "FeatureCollection",
+          features: chains.map((chain, index) => makeCapturedFeature(chain, ref, index)),
+        };
+      }
+
+      function getHighlightViewportKey() {
+        if (!map) return "";
+        const center = map.getCenter();
+        return [
+          normalizeRef(highwayEl.value.trim()),
+          Number(center.lng).toFixed(4),
+          Number(center.lat).toFixed(4),
+          Number(map.getZoom()).toFixed(2),
+        ].join("|");
+      }
+
+      function hasCommittedHighlightSelection() {
+        const currentRef = normalizeRef(highwayEl.value.trim());
+        return Boolean(currentRef) && currentRef === committedHighlightRef;
+      }
+
+      function updateCaptureRouteUi() {
+        if (!captureBtn) return;
+        const hasCommittedSelection = hasCommittedHighlightSelection();
+        const hasCapturedCurrentRef = Boolean(currentCapturedRouteMatches(highwayEl.value.trim()));
+        captureBtn.disabled = !hasCommittedSelection || !map;
+        captureBtn.classList.toggle("active", hasCommittedSelection);
+        captureBtn.classList.toggle(
+          "capture-route-attention",
+          hasCommittedSelection && hasCapturedCurrentRef && captureRouteNeedsRecapture
+        );
+        captureBtn.textContent = hasCommittedSelection && hasCapturedCurrentRef && captureRouteNeedsRecapture
+          ? "Capture more"
+          : "Capture route";
+        if (captureBtn.disabled && hasCommittedSelection) {
+          const disabledHint = "Move around a bit to load more visible route segments, then try Capture route again.";
+          captureBtn.dataset.disabledHint = disabledHint;
+          captureBtn.title = disabledHint;
+        } else {
+          delete captureBtn.dataset.disabledHint;
+          captureBtn.removeAttribute("title");
+        }
+        if (saveHighlightBtn) {
+          saveHighlightBtn.disabled = !hasCapturedCurrentRef;
+        }
+        if (eraseBtn) {
+          eraseBtn.disabled = !hasCapturedCurrentRef;
+          if (!hasCapturedCurrentRef && eraseMode) {
+            setEraseMode(false);
+          }
+        }
+      }
+
+      function hasCaptureRouteActionsReady(ref = highwayEl.value.trim()) {
+        return Boolean(
+          currentCapturedRouteMatches(ref) &&
+          capturedRoute?.features?.length &&
+          saveHighlightBtn &&
+          eraseBtn &&
+          !saveHighlightBtn.disabled &&
+          !eraseBtn.disabled
+        );
+      }
+
+      function markCaptureRouteViewportDirty() {
+        if (!map?.isStyleLoaded?.() || !hasCommittedHighlightSelection() || !currentCapturedRouteMatches(highwayEl.value.trim())) {
+          updateCaptureRouteUi();
+          return;
+        }
+        const nextViewportKey = getHighlightViewportKey();
+        if (!lastCapturedHighlightViewportKey || nextViewportKey === lastCapturedHighlightViewportKey || captureRouteNeedsRecapture) {
+          updateCaptureRouteUi();
+          return;
+        }
+        captureRouteNeedsRecapture = true;
+        updateCaptureRouteUi();
+        setStatus(`More live "${highwayEl.value.trim()}" segments may be visible here. Capture more to save this area.`);
       }
 
       function candidateRefsFor(ref) {
@@ -10348,46 +11400,6 @@
         return best;
       }
 
-      function selectBestChain(chains, point) {
-        if (!chains.length) return null;
-        let bestChain = chains[0];
-        let bestScore = Infinity;
-
-        for (const chain of chains) {
-          const distanceScore = chainDistanceToPoint(chain, point);
-          const lengthScore = chainLength(chain);
-          const score = distanceScore - lengthScore * 0.001;
-          if (score < bestScore) {
-            bestScore = score;
-            bestChain = chain;
-          }
-        }
-
-        return bestChain;
-      }
-
-      function chainBounds(chain) {
-        const bounds = {
-          minLng: Infinity,
-          minLat: Infinity,
-          maxLng: -Infinity,
-          maxLat: -Infinity,
-        };
-        for (const coord of chain || []) {
-          const lng = Number(coord?.[0]);
-          const lat = Number(coord?.[1]);
-          if (!Number.isFinite(lng) || !Number.isFinite(lat)) continue;
-          bounds.minLng = Math.min(bounds.minLng, lng);
-          bounds.minLat = Math.min(bounds.minLat, lat);
-          bounds.maxLng = Math.max(bounds.maxLng, lng);
-          bounds.maxLat = Math.max(bounds.maxLat, lat);
-        }
-        if (!Number.isFinite(bounds.minLng) || !Number.isFinite(bounds.minLat) || !Number.isFinite(bounds.maxLng) || !Number.isFinite(bounds.maxLat)) {
-          return null;
-        }
-        return bounds;
-      }
-
       function waitForMapIdle(timeoutMs = 1800) {
         if (!map) return Promise.resolve();
         return new Promise((resolve) => {
@@ -10418,22 +11430,155 @@
         });
       }
 
+      function isRoadSourceReady() {
+        if (!map?.isStyleLoaded() || !map.getSource(STREETS_SOURCE)) return false;
+        try {
+          return map.isSourceLoaded(STREETS_SOURCE) && map.areTilesLoaded();
+        } catch {
+          return false;
+        }
+      }
+
+      function waitForRoadTilesLoaded(timeoutMs = 1500) {
+        if (!map) return Promise.resolve(false);
+        if (isRoadSourceReady()) return Promise.resolve(true);
+
+        return new Promise((resolve) => {
+          let settled = false;
+          const cleanup = () => {
+            map.off("sourcedata", onTick);
+            map.off("idle", onTick);
+            map.off("render", onTick);
+            clearTimeout(timer);
+          };
+          const finish = (result) => {
+            if (settled) return;
+            settled = true;
+            cleanup();
+            resolve(result);
+          };
+          const onTick = () => {
+            if (isRoadSourceReady()) finish(true);
+          };
+
+          map.on("sourcedata", onTick);
+          map.on("idle", onTick);
+          map.on("render", onTick);
+          map.triggerRepaint();
+
+          const timer = setTimeout(() => finish(isRoadSourceReady()), timeoutMs);
+        });
+      }
+
+      async function replayRuntimeOverlaysAfterStyleChange() {
+        if (!map) return false;
+        await waitForNextFrame();
+        await waitForMapIdle(700);
+        if (!map?.isStyleLoaded?.()) return false;
+        applyBasemapShades();
+        scheduleVisibilityApply();
+        if (shouldHaveHighlightLayers()) {
+          applyHighlight();
+        }
+        renderFrozenShields();
+        renderFrozenPlaces();
+        renderFrozenPois();
+        renderPlaceMarkers();
+        renderDrawnShapes();
+        renderDrawnShapeDraft();
+        scheduleFrozenShieldsRefresh();
+        scheduleFrozenPlacesRefresh();
+        scheduleFrozenPoisRefresh();
+        await waitForNextFrame();
+        await waitForMapIdle(700);
+        if (!map?.isStyleLoaded?.()) return false;
+        if (shouldHaveHighlightLayers()) {
+          applyHighlight();
+        }
+        renderFrozenShields();
+        renderFrozenPlaces();
+        renderFrozenPois();
+        renderPlaceMarkers();
+        renderDrawnShapes();
+        renderDrawnShapeDraft();
+        if (!routeMarkersVisible) {
+          applyRouteMarkerVisibility();
+        }
+        if (shouldHaveHighlightLayers() && !hasRenderedHighlightLayers()) {
+          await waitForNextFrame();
+          await waitForMapIdle(700);
+          if (map?.isStyleLoaded?.()) {
+            applyHighlight();
+          }
+        }
+        map.triggerRepaint();
+        return true;
+      }
+
+      function shouldHaveHighlightLayers() {
+        return Boolean(
+          highwayEl.value.trim() ||
+          savedHighlights.length ||
+          capturedRoute?.features?.length
+        );
+      }
+
+      function hasRenderedHighlightLayers() {
+        if (!map?.isStyleLoaded?.()) return false;
+        if (map.getLayer(LAYER_LINE) || map.getLayer(CAPTURED_LAYER_LINE)) {
+          return true;
+        }
+        return savedHighlights.some((entry) => {
+          const saved = normalizeSavedHighlight(entry);
+          return saved ? Boolean(map.getLayer(`${makeSavedHighlightId(saved)}-line`)) : false;
+        });
+      }
+
       async function focusHighwayInView(ref) {
         if (!map?.isStyleLoaded()) return false;
         ensureStreetsSource();
 
-        const needsZoomToVisibleLevel = map.getZoom() < 11;
+        const targetZoom = 11;
+        const needsZoomToVisibleLevel = Number(map.getZoom()) < (targetZoom - 0.01);
         if (needsZoomToVisibleLevel) {
-          map.flyTo({
+          map.easeTo({
             center: map.getCenter(),
-            zoom: 11,
+            zoom: targetZoom,
             duration: 900,
             essential: true,
           });
-          await waitForMapIdle();
+          await waitForMapIdle(2200);
+          await waitForRoadTilesLoaded(2000);
           return true;
         }
+        await waitForRoadTilesLoaded(2000);
         return false;
+      }
+
+      function queueHighwayVisibleZoom() {
+        if (!map?.isStyleLoaded()) return false;
+        const targetZoom = 11;
+        if (Number(map.getZoom()) >= (targetZoom - 0.01)) return false;
+        map.easeTo({
+          center: map.getCenter(),
+          zoom: targetZoom,
+          duration: 900,
+          essential: true,
+        });
+        return true;
+      }
+
+      function hasCaptureFeaturesReady(ref) {
+        if (!map?.isStyleLoaded()) return false;
+        const normalizedRef = normalizeRef(ref);
+        if (!normalizedRef) return false;
+        const captureGeometry = getCaptureGeometry();
+        const rendered = map.queryRenderedFeatures(captureGeometry, { layers: [LAYER_LINE] });
+        if (rendered.some((feature) => featureMatchesRoute(feature, normalizedRef))) {
+          return true;
+        }
+        const source = map.querySourceFeatures(STREETS_SOURCE, { sourceLayer: "road" });
+        return source.some((feature) => featureMatchesRoute(feature, normalizedRef));
       }
 
 
@@ -10441,13 +11586,17 @@
         const ref = highwayEl.value.trim();
         const segments = [];
         const seen = new Set();
+        const excludedSignatures = getLiveHighlightExclusionSet(ref);
 
         for (const feature of features) {
           if (!featureMatchesRoute(feature, ref)) continue;
           const featureId = feature.id != null ? String(feature.id) : JSON.stringify(feature.geometry?.coordinates || []);
           if (seen.has(featureId)) continue;
           seen.add(featureId);
-          segments.push(...flattenGeometry(feature.geometry));
+          for (const chain of flattenGeometry(feature.geometry)) {
+            if (excludedSignatures?.has(normalizeChainSignature(chain))) continue;
+            segments.push(chain);
+          }
         }
 
         const chains = stitchSegments(segments);
@@ -10488,8 +11637,13 @@
 
       function clearHighlightLayers() {
         clearSavedHighlightLayers();
-        [LAYER_LINE, CAPTURED_LAYER_LINE].forEach((id) => {
+        [LAYER_LINE, LIVE_HIGHLIGHT_ERASED_LAYER, CAPTURED_LAYER_LINE].forEach((id) => {
           if (map.getLayer(id)) map.removeLayer(id);
+        });
+        [LIVE_HIGHLIGHT_ERASED_SOURCE].forEach((sourceId) => {
+          if (map.getSource(sourceId)) {
+            map.removeSource(sourceId);
+          }
         });
         if (map.getSource(CAPTURED_ROUTE_SOURCE)) {
           map.removeSource(CAPTURED_ROUTE_SOURCE);
@@ -10497,11 +11651,11 @@
       }
 
       function paintLiveHighlight(ref, style) {
-        const filter = buildFilter(ref);
         ensureStreetsSource();
 
         const insertBefore = map.getStyle().layers.find((l) => l.id.includes("road-label"))?.id;
         const strokeWeight = Math.max(0.1, style.strokeWeight || 1);
+        const filter = buildFilter(ref);
 
         map.addLayer(
           {
@@ -10522,7 +11676,64 @@
           },
           insertBefore
         );
+        const erasedLiveGeojson = getLiveHighlightErasedGeoJSON(ref);
+        if (erasedLiveGeojson?.features?.length) {
+          map.addSource(LIVE_HIGHLIGHT_ERASED_SOURCE, {
+            type: "geojson",
+            data: erasedLiveGeojson,
+          });
+
+          map.addLayer(
+            {
+              id: LIVE_HIGHLIGHT_ERASED_LAYER,
+              type: "line",
+              source: LIVE_HIGHLIGHT_ERASED_SOURCE,
+              minzoom: 11,
+              paint: {
+                "line-color": "#d6d3d1",
+                "line-cap": "round",
+                "line-join": "round",
+                "line-width": scaleWidthStops([0, 0.5, 4, 2, 7, 4, 10, 6, 13, 9, 16, 12], strokeWeight),
+                "line-opacity": 0.96,
+                "line-blur": 0.1,
+              },
+            },
+            insertBefore
+          );
+        }
         placeInvertMaskBelowOverlays();
+      }
+
+      function eraseLiveHighlightInRect(rect) {
+        if (!map?.isStyleLoaded()) return 0;
+        const ref = highwayEl.value.trim();
+        if (!ref) return 0;
+        const bbox = [
+          [rect.minX, rect.minY],
+          [rect.maxX, rect.maxY],
+        ];
+        const rendered = map.queryRenderedFeatures(bbox, { layers: [LAYER_LINE] });
+        if (!rendered.length) return 0;
+
+        const exclusions = getLiveHighlightExclusionSet(ref, { create: true });
+        const erasedChains = getLiveHighlightErasedChains(ref, { create: true });
+        let removed = 0;
+
+        for (const feature of rendered) {
+          for (const chain of flattenGeometry(feature.geometry)) {
+            if (!chainIntersectsRect(chain, rect)) continue;
+            const signature = normalizeChainSignature(chain);
+            if (exclusions.has(signature)) continue;
+            exclusions.add(signature);
+            erasedChains.push(chain.slice());
+            removed += 1;
+          }
+        }
+
+        if (!removed && exclusions.size === 0) {
+          clearLiveHighlightExclusions(ref);
+        }
+        return removed;
       }
 
       function paintCapturedHighlight(geojson, style) {
@@ -10613,7 +11824,6 @@
         const zoom = map.getZoom();
 
         clearHighlightLayers();
-        applyBasemapShades();
         repaintSavedHighways();
 
         if (currentCapturedRouteMatches(ref)) {
@@ -10638,36 +11848,54 @@
         renderFrozenShields();
         renderFrozenPlaces();
         renderFrozenPois();
+        updateCaptureRouteUi();
         if (activePanelTab === "print") {
           updatePrintPreview();
         }
       }
 
-      function captureRoute() {
+      async function captureRoute() {
         if (!map || !map.isStyleLoaded()) {
           setStatus("Load the map before capturing a route.", true);
           return;
         }
 
         const ref = highwayEl.value.trim();
-        const captureGeometry = getCaptureGeometry();
-        const rendered = map.queryRenderedFeatures(captureGeometry, { layers: [LAYER_LINE] });
-        const source = map.querySourceFeatures(STREETS_SOURCE, { sourceLayer: "road" });
-        const geojson = buildCapturedGeoJSON([...rendered, ...source], capturedRoute);
-        const mergedGeojson = currentCapturedRouteMatches(ref) && capturedRoute
-          ? mergeCapturedGeoJSON(capturedRoute, geojson)
-          : geojson;
+        const maxAttempts = 4;
 
-        if (!mergedGeojson) {
-          setStatus("No visible highway segments were found to capture. Zoom to a level where the route is visible, then try again.", true);
-          return;
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+          await waitForRoadTilesLoaded();
+
+          const captureGeometry = getCaptureGeometry();
+          const rendered = map.queryRenderedFeatures(captureGeometry, { layers: [LAYER_LINE] });
+          const source = map.querySourceFeatures(STREETS_SOURCE, { sourceLayer: "road" });
+          const geojson = buildCapturedGeoJSON([...rendered, ...source], capturedRoute);
+          const mergedGeojson = currentCapturedRouteMatches(ref) && capturedRoute
+            ? mergeCapturedGeoJSON(capturedRoute, geojson)
+            : geojson;
+
+          if (mergedGeojson) {
+            saveCapturedRoute(ref, mergedGeojson);
+            applyHighlight();
+            await waitForNextFrame();
+            if (!hasCaptureRouteActionsReady(ref) && attempt < maxAttempts - 1) {
+              await new Promise((resolve) => setTimeout(resolve, 250));
+              map.triggerRepaint();
+              continue;
+            }
+            setStatus(currentCapturedRouteMatches(ref)
+              ? `Captured and extended "${ref}" from the buffered frame for future zooms.`
+              : `Captured and stitched "${ref}" from the buffered frame for future zooms.`);
+            return;
+          }
+
+          if (attempt < maxAttempts - 1) {
+            await new Promise((resolve) => setTimeout(resolve, 300));
+            map.triggerRepaint();
+          }
         }
 
-        saveCapturedRoute(ref, mergedGeojson);
-        applyHighlight();
-        setStatus(currentCapturedRouteMatches(ref)
-          ? `Captured and extended "${ref}" from the buffered frame for future zooms.`
-          : `Captured and stitched "${ref}" from the buffered frame for future zooms.`);
+        setStatus("No visible highway segments were found to capture. Zoom to a level where the route is visible, then try again.", true);
       }
 
       function ensureMap() {
@@ -10685,6 +11913,7 @@
           map = new mapboxgl.Map({
             container: "map",
             style: getMapStyleUrl(),
+            config: getMapStyleConfig(),
             center: MAP_CENTER,
             zoom: MAP_ZOOM,
             antialias: true,
@@ -10709,6 +11938,10 @@
           map.on("movestart", clearHoveredLiveShield);
           map.on("moveend", () => {
             if (powerLinesVisible) queuePowerLinesRefresh();
+            if (getLiveHighlightExclusionSet()?.size) {
+              applyHighlight();
+            }
+            markCaptureRouteViewportDirty();
           });
           map.on("click", handleShieldClick);
           map.on("mousedown", (event) => {
@@ -10747,6 +11980,7 @@
                 draggedDrawnShapePoint.shapeId,
                 draggedDrawnShapePoint.pointIndex,
                 event.lngLat,
+                { persist: false },
               );
               return;
             }
@@ -10773,7 +12007,14 @@
             if (penDrawModeEnabled) return;
             if (draggedDrawnShapePoint) return;
             const vertexHit = queryNearestRenderedFeature(event.point, [DRAWN_SHAPES_EDIT_POINTS_LAYER], 14);
+            const shapeHit = editingShapeId
+              ? queryNearestRenderedFeature(event.point, [DRAWN_SHAPES_FILL_LAYER, DRAWN_SHAPES_LINE_LAYER], 12)
+              : null;
+            hoveredDrawnShapeBody = Boolean(shapeHit);
             hoveredDrawnShapeVertex = Boolean(vertexHit);
+            if (hoveredDrawnShapeBody) {
+              hoveredDrawnShapeVertex = false;
+            }
             hoveredDrawnShapeInsertTarget = vertexHit || !editingShapeId ? null : getDrawnShapeInsertTarget(event.point);
             if (!distanceMeasureModeEnabled && !eraseDrag) {
               syncMapCursor();
@@ -10782,6 +12023,7 @@
           map.on("mousemove", handleShieldHover);
           map.on("mouseout", clearHoveredLiveShield);
           map.on("mouseout", () => {
+            hoveredDrawnShapeBody = false;
             hoveredDrawnShapeVertex = false;
             hoveredDrawnShapeInsertTarget = null;
             syncMapCursor();
@@ -10795,6 +12037,7 @@
               setStatus("Shape point moved.");
               return;
             }
+            hoveredDrawnShapeBody = false;
             hoveredDrawnShapeVertex = false;
             hoveredDrawnShapeInsertTarget = null;
             syncMapCursor();
@@ -10817,6 +12060,8 @@
           map.on("style.load", () => {
             window.__dbgMap = map;
             roadLineWidthDefaults = new Map();
+            mapPaintDefaults = new Map();
+            linePaintDefaults = new Map();
             streetLayerFilterDefaults = new Map();
             builtLandFilterDefaults = new Map();
             placeLabelPaintDefaults = new Map();
@@ -10826,6 +12071,7 @@
             frozenPoiInteractionsBound = false;
             hoveredLiveShieldKey = "";
             updateZoomBadge();
+            applyPresetStyleConfig();
             scheduleBasemapApply();
             scheduleVisibilityApply();
             if (powerLinesVisible) {
@@ -10837,21 +12083,21 @@
             ensureDistanceMeasureOverlay();
             ensureDrawnShapeLayers();
             renderDistanceMeasurePoints();
-            if (pendingImportedHighlightCommit) {
-              pendingImportedHighlightCommit = false;
-              void applyHighwaySearchHighlight({ commit: true, focusMap: false });
-            } else {
+            if (!consumePendingHighlightCommit()) {
               scheduleHighlightApply();
             }
-            renderFrozenShields();
-            renderFrozenPlaces();
-            renderFrozenPois();
-            renderPlaceMarkers();
-            renderDrawnShapes();
-            renderDrawnShapeDraft();
-            scheduleFrozenShieldsRefresh();
-            scheduleFrozenPlacesRefresh();
-            scheduleFrozenPoisRefresh();
+        renderFrozenShields();
+        renderFrozenPlaces();
+        renderFrozenPois();
+        renderPlaceMarkers();
+        renderDrawnShapes();
+        renderDrawnShapeDraft();
+        if (!routeMarkersVisible) {
+          applyRouteMarkerVisibility();
+        }
+        scheduleFrozenShieldsRefresh();
+        scheduleFrozenPlacesRefresh();
+        scheduleFrozenPoisRefresh();
             applyPendingProjectViewport();
             if (activePanelTab === "print") {
               updatePrintPreview();
@@ -10867,10 +12113,7 @@
           ensureDistanceMeasureOverlay();
           ensureDrawnShapeLayers();
           renderDistanceMeasurePoints();
-          if (pendingImportedHighlightCommit) {
-            pendingImportedHighlightCommit = false;
-            void applyHighwaySearchHighlight({ commit: true, focusMap: false });
-          } else {
+          if (!consumePendingHighlightCommit()) {
             applyHighlight();
           }
           renderFrozenShields();
@@ -10884,7 +12127,8 @@
           scheduleFrozenPoisRefresh();
           applyPendingProjectViewport();
         } else {
-          map.setStyle(getMapStyleUrl());
+          map.setStyle(getMapStyleUrl(), { config: getMapStyleConfig() });
+          void replayRuntimeOverlaysAfterStyleChange();
         }
       }
 
@@ -10922,16 +12166,26 @@
         if (!map?.isStyleLoaded()) return;
         const nextRef = highwayEl.value.trim();
         if (!commit && capturedRoute?.features?.length && normalizeRef(nextRef) !== capturedRouteRef) {
+          updateCaptureRouteUi();
           setStatus(`Press Enter to save "${capturedRoute?.features?.[0]?.properties?.highwayRef || capturedRouteRef}" and switch highlights.`);
           return;
         }
         if (commit) {
           autoSaveCapturedHighlightBeforeSearch(nextRef);
+          committedHighlightRef = normalizeRef(nextRef);
+          captureRouteNeedsRecapture = false;
+          if (!committedHighlightRef) {
+            lastCapturedHighlightViewportKey = "";
+          }
           applyHighlight();
           if (focusMap) {
             const focused = await focusHighwayInView(nextRef);
+            map.triggerRepaint();
+            await waitForNextFrame();
+            await waitForMapIdle(700);
+            applyHighlight();
+            updateCaptureRouteUi();
             if (focused) {
-              applyHighlight();
               return;
             }
             if (!focused) {
@@ -10939,6 +12193,7 @@
             }
           } else {
             applyHighlight();
+            updateCaptureRouteUi();
             return;
           }
           if (focusMap) {
@@ -10946,6 +12201,7 @@
           }
         }
         applyHighlight();
+        updateCaptureRouteUi();
       }
       captureBtn.addEventListener("click", captureRoute);
       saveHighlightBtn.addEventListener("click", saveCurrentHighlight);
@@ -10962,12 +12218,42 @@
       refreshPrintBtn.addEventListener("click", updatePrintPreview);
       exportPdfBtn.addEventListener("click", exportPrintPdf);
       backToEditorBtn.addEventListener("click", () => setPanelTab("editor"));
-      highwayEl.addEventListener("input", () => applyHighwaySearchHighlight());
+      async function runHighwayEnterFlow() {
+        const styleReady = await waitForMapStyleReady(3200);
+        if (!styleReady || !map?.isStyleLoaded?.()) return;
+        const shouldFocusMap = Boolean(highwayEl.value.trim());
+        const queuedZoom = shouldFocusMap ? queueHighwayVisibleZoom() : false;
+        void applyHighwaySearchHighlight({ commit: true, focusMap: shouldFocusMap });
+        if (queuedZoom && map) {
+          map.once("moveend", () => {
+            if (!map?.isStyleLoaded?.()) return;
+            map.triggerRepaint();
+            applyHighlight();
+            updateCaptureRouteUi();
+          });
+        }
+      }
+
+      function consumePendingHighlightCommit() {
+        if (pendingImportedHighlightCommit) {
+          pendingImportedHighlightCommit = false;
+          void applyHighwaySearchHighlight({ commit: true, focusMap: false });
+          return true;
+        }
+        if (pendingStylePresetHighlightCommit) {
+          pendingStylePresetHighlightCommit = false;
+          void applyHighwaySearchHighlight({ commit: true, focusMap: false });
+          return true;
+        }
+        return false;
+      }
+
+      highwayEl.addEventListener("input", () => updateCaptureRouteUi());
       highwayEl.addEventListener("change", () => applyHighwaySearchHighlight({ commit: true }));
       highwayEl.addEventListener("keydown", (event) => {
         if (event.key !== "Enter") return;
         event.preventDefault();
-        applyHighwaySearchHighlight({ commit: true });
+        runHighwayEnterFlow();
       });
       colorEl.addEventListener("input", () => { if (map?.isStyleLoaded()) applyHighlight(); });
       colorEl.addEventListener("change", () => { if (map?.isStyleLoaded()) applyHighlight(); });
@@ -10975,10 +12261,6 @@
       strokeWeightEl.addEventListener("change", () => { if (map?.isStyleLoaded()) applyHighlight(); });
       landColorEl.addEventListener("input", () => handleLandColorChange(landColorEl.value));
       landColorEl.addEventListener("change", () => handleLandColorChange(landColorEl.value));
-      landcoverColorEl.addEventListener("input", () => handleLandColorChange(landcoverColorEl.value));
-      landcoverColorEl.addEventListener("change", () => handleLandColorChange(landcoverColorEl.value));
-      naturalLandcoverColorEl.addEventListener("input", () => handleLandColorChange(naturalLandcoverColorEl.value));
-      naturalLandcoverColorEl.addEventListener("change", () => handleLandColorChange(naturalLandcoverColorEl.value));
       parkColorEl.addEventListener("input", () => handleLandColorChange(parkColorEl.value));
       parkColorEl.addEventListener("change", () => handleLandColorChange(parkColorEl.value));
       waterColorEl.addEventListener("input", () => { saveBasemapShades(); if (map?.isStyleLoaded()) applyBasemapShades(); });
@@ -11006,20 +12288,34 @@
       });
       function handleStreetVisibilityToggle() {
         primaryStreetsVisible = toggleStreetPrimaryBtn.checked;
-        localStreetsVisible = toggleStreetLocalBtn.checked;
+        secondaryStreetsVisible = toggleStreetSecondaryBtn.checked;
+        localStreetsVisible = true;
         saveStreetVisibilityState();
         updateVisibilityButtons();
         scheduleVisibilityApply();
       }
       toggleStreetPrimaryBtn.addEventListener("change", handleStreetVisibilityToggle);
-      toggleStreetLocalBtn.addEventListener("change", handleStreetVisibilityToggle);
+      toggleStreetSecondaryBtn.addEventListener("change", () => {
+        handleStreetVisibilityToggle();
+        if (hasRunSecondaryStreetToggleWarmup) return;
+        hasRunSecondaryStreetToggleWarmup = true;
+        for (let attempt = 1; attempt < 5; attempt++) {
+          window.setTimeout(() => {
+            if (map?.isStyleLoaded?.()) {
+              applyVisibilityToggles();
+            } else {
+              scheduleVisibilityApply();
+            }
+          }, attempt * 120);
+        }
+      });
       toggleStreetLabelsBtn.addEventListener("change", () => {
         streetLabelsVisible = toggleStreetLabelsBtn.checked;
         saveStreetVisibilityState();
         updateVisibilityButtons();
         scheduleVisibilityApply();
       });
-      toggleBuildingsBtn.addEventListener("change", () => {
+      toggleBuildingsBtn?.addEventListener("change", () => {
         buildingsVisible = toggleBuildingsBtn.checked;
         localStorage.setItem(BUILDINGS_HIDDEN_KEY, String(!buildingsVisible));
         updateVisibilityButtons();
@@ -11126,8 +12422,8 @@
         }
       });
       function handleHighwayVisibilityToggle() {
-        majorHighwaysVisible = toggleHighwayMajorBtn.checked;
-        minorHighwaysVisible = toggleHighwayMinorBtn.checked;
+        majorHighwaysVisible = Boolean(toggleHighwayMajorBtn?.checked ?? majorHighwaysVisible);
+        minorHighwaysVisible = Boolean(toggleHighwayMinorBtn?.checked ?? minorHighwaysVisible);
         localStorage.setItem(HIGHWAY_MAJOR_VISIBLE_KEY, String(majorHighwaysVisible));
         localStorage.setItem(HIGHWAY_MINOR_VISIBLE_KEY, String(minorHighwaysVisible));
         localStorage.setItem(
@@ -11137,8 +12433,8 @@
         updateVisibilityButtons();
         scheduleVisibilityApply();
       }
-      toggleHighwayMajorBtn.addEventListener("change", handleHighwayVisibilityToggle);
-      toggleHighwayMinorBtn.addEventListener("change", handleHighwayVisibilityToggle);
+      toggleHighwayMajorBtn?.addEventListener("change", handleHighwayVisibilityToggle);
+      toggleHighwayMinorBtn?.addEventListener("change", handleHighwayVisibilityToggle);
       function handlePlaceVisibilityToggle() {
         majorPlacesVisible = togglePlaceMajorBtn.checked;
         otherPlacesVisible = togglePlaceOtherBtn.checked;
@@ -11160,12 +12456,31 @@
         scheduleVisibilityApply();
       });
       stylePresetEl.addEventListener("change", () => {
+        const previousPreset = normalizeStylePresetValue(localStorage.getItem(STYLE_PRESET_KEY));
         const preset = getStylePreset();
         localStorage.setItem(STYLE_PRESET_KEY, preset);
+        syncBasemapPresetShades(preset);
+        saveBasemapShades();
         updateLandPanelVisibility();
         if (!map) return;
         if (!mapboxgl.accessToken) return;
-        map.setStyle(getMapStyleUrl());
+        pendingStylePresetHighlightCommit = true;
+        if (shouldReloadMapStyle(previousPreset, preset)) {
+          map.setStyle(getMapStyleUrl(), { config: getMapStyleConfig(preset) });
+        } else if (map.isStyleLoaded()) {
+          applyPresetStyleConfig();
+          applyBasemapShades();
+          applyBuiltLandVisibility();
+          scheduleVisibilityApply();
+          consumePendingHighlightCommit();
+          map.triggerRepaint();
+        }
+        if (savedHighlights.length) {
+          showTemporaryInteractionHelper(
+            "Highlights Tip",
+            "If you want to see highlights from other styles, open Highway Highlights and press Enter in the highway ref field."
+          );
+        }
         setStatus(`Switched to "${STYLE_PRESETS[preset].label}".`);
       });
       tokenEl.addEventListener("change", () => { localStorage.setItem(`${STORE_KEY}:token`, tokenEl.value.trim()); });
@@ -11179,9 +12494,15 @@
         action?.();
       });
       welcomeContinueBtn?.addEventListener("click", closeWelcomeOverlay);
+      importHighlightContinueBtn?.addEventListener("click", closeImportHighlightOverlay);
       confirmOverlayEl?.addEventListener("click", (event) => {
         if (event.target === confirmOverlayEl) {
           closeConfirmDialog();
+        }
+      });
+      importHighlightOverlayEl?.addEventListener("click", (event) => {
+        if (event.target === importHighlightOverlayEl) {
+          closeImportHighlightOverlay();
         }
       });
       document.addEventListener("pointerdown", (event) => {
@@ -11278,6 +12599,7 @@
       }
       updateLandPanelVisibility();
       updateLandModeButtons();
+      updateCaptureRouteUi();
       if (landMode !== "off") {
         applyFlattenedLandPalette(landColorEl.value);
       }
