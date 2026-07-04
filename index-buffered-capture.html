@@ -2146,8 +2146,8 @@
                           Base map
                           <select id="style-preset">
                             <option value="streets">Mapbox Streets</option>
-                            <option value="grey">Simple grey</option>
                             <option value="satellite">Satellite streets</option>
+                            <option value="grey">Simple grey (less features)</option>
                           </select>
                         </label>
                         <label class="color-wrap flatten-land-only" id="flatten-land-color-control" hidden>
@@ -2210,6 +2210,18 @@
                         <label>
                           Street weight
                           <input id="street-width" type="number" min="0.25" max="4" step="0.05" value="1" />
+                        </label>
+                      </div>
+                    </div>
+                  </details>
+
+                  <details class="basemap-group" id="satellite-street-label-tools" hidden>
+                    <summary>Street names</summary>
+                    <div class="basemap-group-body">
+                      <div class="basemap-toggle-row">
+                        <label class="toggle-check">
+                          <input id="toggle-street-labels-satellite" type="checkbox" />
+                          <span>Street names</span>
                         </label>
                       </div>
                     </div>
@@ -2445,7 +2457,7 @@
                     <summary>Advanced</summary>
                     <div class="basemap-group-body">
                       <details class="basemap-subgroup">
-                        <summary>Buildings</summary>
+                        <summary>Buildings (flatten land off only)</summary>
                         <div class="basemap-subgroup-body">
                           <div class="style-block">
                             <div class="style-block-section">
@@ -2683,6 +2695,7 @@
       const stylePresetEl = document.getElementById("style-preset");
       const flattenLandColorControlEl = document.getElementById("flatten-land-color-control");
       const streetToolsEl = document.getElementById("street-tools");
+      const satelliteStreetLabelToolsEl = document.getElementById("satellite-street-label-tools");
       const advancedToolsEl = document.getElementById("advanced-tools");
       const highwayToolsEl = document.getElementById("highway-tools");
       const landGroupEl = document.getElementById("land-group");
@@ -2738,6 +2751,7 @@
       const toggleStreetPrimaryBtn = document.getElementById("toggle-street-primary");
       const toggleStreetSecondaryBtn = document.getElementById("toggle-street-secondary");
       const toggleStreetLabelsBtn = document.getElementById("toggle-street-labels");
+      const toggleStreetLabelsSatelliteBtn = document.getElementById("toggle-street-labels-satellite");
       const flattenLandBtn = document.getElementById("flatten-land");
       const toggleBuildingsBtn = document.getElementById("toggle-buildings");
       const poiToolsEl = document.getElementById("poi-tools");
@@ -2813,6 +2827,7 @@
       const STREET_SECONDARY_VISIBLE_KEY = `${STORE_KEY}:streetSecondaryVisible`;
       const STREET_LOCAL_VISIBLE_KEY = `${STORE_KEY}:streetLocalVisible`;
       const STREET_LABELS_VISIBLE_KEY = `${STORE_KEY}:streetLabelsVisible`;
+      const SATELLITE_STREET_LABELS_VISIBLE_KEY = `${STORE_KEY}:satelliteStreetLabelsVisible`;
       const MINOR_STREETS_HIDDEN_KEY = `${STORE_KEY}:minorStreetsHidden`;
       const BUILDINGS_HIDDEN_KEY = `${STORE_KEY}:buildingsHidden`;
       const POI_HIDDEN_KEY = `${STORE_KEY}:poiHidden`;
@@ -3234,8 +3249,14 @@
         if (saved === "true" || saved === "false") return saved === "true";
         return true;
       })();
+      let satelliteStreetLabelsVisible = (() => {
+        const saved = localStorage.getItem(SATELLITE_STREET_LABELS_VISIBLE_KEY);
+        if (saved === "true" || saved === "false") return saved === "true";
+        return true;
+      })();
       let hasRunSecondaryStreetToggleWarmup = false;
       saveStreetVisibilityState();
+      saveSatelliteStreetVisibilityState();
       let buildingsVisible = localStorage.getItem(BUILDINGS_HIDDEN_KEY) !== "true";
       let poiVisible = localStorage.getItem(POI_HIDDEN_KEY) !== "true";
       let trainStopsVisible = localStorage.getItem(TRAIN_STOPS_VISIBLE_KEY) !== "false";
@@ -3388,6 +3409,12 @@
 
       function placeMarkerAnchor(style = "classic") {
         return isDotMarkerStyle(style) ? "center" : "bottom";
+      }
+
+      function placeMarkerDisplaySize(style = "classic") {
+        return isDotMarkerStyle(style)
+          ? { width: 36, height: 36 }
+          : { width: 36, height: 48 };
       }
 
       function placeMarkerIconSvg(style = "classic", color = defaultPlaceMarkerColor(style)) {
@@ -5648,6 +5675,7 @@
           landGroupEl.hidden = false;
         }
         if (streetToolsEl) streetToolsEl.hidden = isSatellite;
+        if (satelliteStreetLabelToolsEl) satelliteStreetLabelToolsEl.hidden = !isSatellite;
         if (advancedToolsEl) advancedToolsEl.hidden = isSatellite || isSimpleGrey;
         if (highwayToolsEl) highwayToolsEl.hidden = isSatellite || isSimpleGrey;
         if (routeMarkerToolsEl) routeMarkerToolsEl.hidden = isSimpleGrey;
@@ -5678,6 +5706,62 @@
       function getViewportImageDataUrl() {
         if (!map || !map.isStyleLoaded()) return "";
         return map.getCanvas().toDataURL("image/png");
+      }
+
+      function loadImageFromDataUrl(dataUrl) {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = reject;
+          img.src = dataUrl;
+        });
+      }
+
+      async function getCompositeViewportImageDataUrl() {
+        if (!map || !map.isStyleLoaded()) return "";
+        const baseCanvas = map.getCanvas();
+        const width = Math.max(1, Math.round(baseCanvas.width));
+        const height = Math.max(1, Math.round(baseCanvas.height));
+        const cssWidth = Math.max(1, Math.round(baseCanvas.clientWidth || width));
+        const cssHeight = Math.max(1, Math.round(baseCanvas.clientHeight || height));
+        const pixelScaleX = width / cssWidth;
+        const pixelScaleY = height / cssHeight;
+        const compositeCanvas = document.createElement("canvas");
+        compositeCanvas.width = width;
+        compositeCanvas.height = height;
+        const ctx = compositeCanvas.getContext("2d");
+        if (!ctx) return getViewportImageDataUrl();
+        ctx.drawImage(baseCanvas, 0, 0, width, height);
+
+        const markerEntries = placeMarkers
+          .map((entry) => normalizePlaceMarker(entry))
+          .filter(Boolean);
+        if (!markerEntries.length) {
+          return compositeCanvas.toDataURL("image/png");
+        }
+
+        const markerImages = await Promise.all(markerEntries.map(async (entry) => ({
+          entry,
+          image: await loadImageFromDataUrl(placeMarkerIconSvg(entry.styleKey, entry.color)),
+        })));
+
+        for (const { entry, image } of markerImages) {
+          const projected = map.project([entry.lng, entry.lat]);
+          const scale = Number(entry.scale) || 1;
+          const displaySize = placeMarkerDisplaySize(entry.styleKey);
+          const drawWidth = Math.max(1, Math.round(displaySize.width * scale * pixelScaleX));
+          const drawHeight = Math.max(1, Math.round(displaySize.height * scale * pixelScaleY));
+          const anchor = placeMarkerAnchor(entry.styleKey);
+          const projectedX = projected.x * pixelScaleX;
+          const projectedY = projected.y * pixelScaleY;
+          const drawX = projectedX - (drawWidth / 2);
+          const drawY = anchor === "center"
+            ? projectedY - (drawHeight / 2)
+            : projectedY - drawHeight;
+          ctx.drawImage(image, drawX, drawY, drawWidth, drawHeight);
+        }
+
+        return compositeCanvas.toDataURL("image/png");
       }
 
       function downloadDataUrlFile(dataUrl, filename) {
@@ -5859,12 +5943,12 @@
         };
       }
 
-      function captureCurrentViewportPngImage() {
+      async function captureCurrentViewportPngImage() {
         if (!map || !map.isStyleLoaded()) {
           throw new Error("Map is not ready.");
         }
         return {
-          dataUrl: getViewportImageDataUrl(),
+          dataUrl: await getCompositeViewportImageDataUrl(),
         };
       }
 
@@ -5939,9 +6023,9 @@
         }
       }
 
-      function updatePrintPreview() {
+      async function updatePrintPreview() {
         if (!printPreviewImageEl) return;
-        const dataUrl = getViewportImageDataUrl();
+        const dataUrl = await getCompositeViewportImageDataUrl();
         if (dataUrl) {
           printPreviewImageEl.src = dataUrl;
           printPreviewImageEl.alt = `Viewport preview for ${highwayEl.value.trim() || "route"}`;
@@ -6306,11 +6390,11 @@
             zoomScale: Math.min(scaleX, scaleY),
           });
           dataUrl = exportResult.dataUrl;
-        } catch (error) {
+          } catch (error) {
           console.warn("High-quality PNG export failed.", error);
           try {
             setPrintExportStatus("High-quality PNG failed. Falling back to the current viewport...");
-            const exportResult = captureCurrentViewportPngImage();
+            const exportResult = await captureCurrentViewportPngImage();
             dataUrl = exportResult.dataUrl;
             usedViewportFallback = true;
           } catch (viewportError) {
@@ -6452,6 +6536,7 @@
         toggleStreetPrimaryBtn.checked = primaryStreetsVisible;
         toggleStreetSecondaryBtn.checked = secondaryStreetsVisible;
         toggleStreetLabelsBtn.checked = streetLabelsVisible;
+        if (toggleStreetLabelsSatelliteBtn) toggleStreetLabelsSatelliteBtn.checked = satelliteStreetLabelsVisible;
         if (toggleBuildingsBtn) toggleBuildingsBtn.checked = buildingsVisible;
         togglePoiBtn.checked = poiVisible;
         if (toggleTrainStopsBtn) toggleTrainStopsBtn.checked = trainStopsVisible;
@@ -6467,6 +6552,7 @@
         toggleStreetPrimaryBtn.closest(".toggle-check")?.classList.toggle("active", primaryStreetsVisible);
         toggleStreetSecondaryBtn.closest(".toggle-check")?.classList.toggle("active", secondaryStreetsVisible);
         toggleStreetLabelsBtn.closest(".toggle-check")?.classList.toggle("active", streetLabelsVisible);
+        toggleStreetLabelsSatelliteBtn?.closest(".toggle-check")?.classList.toggle("active", satelliteStreetLabelsVisible);
         toggleBuildingsBtn?.closest(".toggle-check")?.classList.toggle("active", buildingsVisible);
         togglePoiBtn.closest(".toggle-check")?.classList.toggle("active", poiVisible);
         toggleTrainStopsBtn?.closest(".toggle-check")?.classList.toggle("active", trainStopsVisible);
@@ -6915,8 +7001,12 @@
           ],
           false
         );
-        changed += setPlaceLayerHiddenByIds(streetTargets.labels, false);
         return changed;
+      }
+
+      function applySatelliteStreetLabelVisibility() {
+        const targets = getStreetVisibilityTargets();
+        return setPlaceLayerHiddenByIds(targets.labels, !satelliteStreetLabelsVisible);
       }
 
       function applyRouteMarkerVisibility() {
@@ -6952,6 +7042,10 @@
                 : "custom";
         localStorage.setItem(STREET_VISIBILITY_KEY, legacyMode);
         localStorage.setItem(MINOR_STREETS_HIDDEN_KEY, String(!(secondaryStreetsVisible || localStreetsVisible)));
+      }
+
+      function saveSatelliteStreetVisibilityState() {
+        localStorage.setItem(SATELLITE_STREET_LABELS_VISIBLE_KEY, String(satelliteStreetLabelsVisible));
       }
 
       function getPlaceVisibilityTargets() {
@@ -7680,6 +7774,7 @@
         if (!map || !map.isStyleLoaded()) return;
         if (isSatellitePreset()) {
           applyDefaultStreetAndHighwayVisibility();
+          applySatelliteStreetLabelVisibility();
         } else {
           applyStreetVisibility();
           applyHighwayVisibility();
@@ -12577,6 +12672,12 @@
       toggleStreetLabelsBtn.addEventListener("change", () => {
         streetLabelsVisible = toggleStreetLabelsBtn.checked;
         saveStreetVisibilityState();
+        updateVisibilityButtons();
+        scheduleVisibilityApply();
+      });
+      toggleStreetLabelsSatelliteBtn?.addEventListener("change", () => {
+        satelliteStreetLabelsVisible = toggleStreetLabelsSatelliteBtn.checked;
+        saveSatelliteStreetVisibilityState();
         updateVisibilityButtons();
         scheduleVisibilityApply();
       });
