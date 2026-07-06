@@ -3321,6 +3321,9 @@
       localStorage.removeItem(FROZEN_PLACE_MODE_KEY);
       localStorage.removeItem(FROZEN_POI_MODE_KEY);
       let selectedFrozenShieldId = localStorage.getItem(FROZEN_SHIELD_SELECTED_KEY) || "";
+      let visibleFrozenShieldLocatorId = "";
+      let frozenShieldLocatorBlinkIntervalId = 0;
+      let frozenShieldLocatorClearTimeoutId = 0;
       let selectedFrozenPlaceId = localStorage.getItem(FROZEN_PLACE_SELECTED_KEY) || "";
       let selectedFrozenPoiId = localStorage.getItem(FROZEN_POI_SELECTED_KEY) || "";
       let frozenShieldScale = (() => {
@@ -9172,14 +9175,63 @@
 
       function updateFrozenShieldSelectionLayers() {
         if (!map || !map.isStyleLoaded()) return;
-        const selectedId = selectedFrozenShieldId || "__none__";
-        const selectedFilter = ["==", ["id"], selectedId];
+        const selectedId = visibleFrozenShieldLocatorId || "__none__";
+        const selectedFilter = ["==", ["get", "id"], selectedId];
         for (const layerId of [FROZEN_SHIELD_SELECTED_GLOW_LAYER, FROZEN_SHIELD_SELECTED_RING_LAYER]) {
           if (!map.getLayer(layerId)) continue;
           try {
             map.setFilter(layerId, selectedFilter);
           } catch {}
         }
+      }
+
+      function clearFrozenShieldLocatorTimers() {
+        if (frozenShieldLocatorBlinkIntervalId) {
+          window.clearInterval(frozenShieldLocatorBlinkIntervalId);
+          frozenShieldLocatorBlinkIntervalId = 0;
+        }
+        if (frozenShieldLocatorClearTimeoutId) {
+          window.clearTimeout(frozenShieldLocatorClearTimeoutId);
+          frozenShieldLocatorClearTimeoutId = 0;
+        }
+      }
+
+      function clearFrozenShieldLocator() {
+        clearFrozenShieldLocatorTimers();
+        visibleFrozenShieldLocatorId = "";
+        updateFrozenShieldSelectionLayers();
+        map?.triggerRepaint?.();
+      }
+
+      function showTemporaryFrozenShieldLocator(id) {
+        const nextId = String(id || "");
+        if (!nextId) {
+          clearFrozenShieldLocator();
+          return;
+        }
+        clearFrozenShieldLocatorTimers();
+        visibleFrozenShieldLocatorId = nextId;
+        updateFrozenShieldSelectionLayers();
+        map?.triggerRepaint?.();
+
+        let blinkCount = 0;
+        let locatorVisible = true;
+        frozenShieldLocatorBlinkIntervalId = window.setInterval(() => {
+          locatorVisible = !locatorVisible;
+          visibleFrozenShieldLocatorId = locatorVisible ? nextId : "";
+          updateFrozenShieldSelectionLayers();
+          map?.triggerRepaint?.();
+          if (!locatorVisible) {
+            blinkCount += 1;
+          }
+          if (blinkCount >= 3) {
+            clearFrozenShieldLocator();
+          }
+        }, 500);
+
+        frozenShieldLocatorClearTimeoutId = window.setTimeout(() => {
+          clearFrozenShieldLocator();
+        }, 3000);
       }
 
       function ensureFrozenShieldsOverlay() {
@@ -9206,9 +9258,9 @@
             id: FROZEN_SHIELD_SELECTED_GLOW_LAYER,
             type: "circle",
             source: FROZEN_SHIELDS_SOURCE,
-            filter: ["==", ["id"], selectedFrozenShieldId || "__none__"],
+            filter: ["==", ["get", "id"], visibleFrozenShieldLocatorId || "__none__"],
             paint: {
-              "circle-color": "rgba(59, 130, 246, 0.26)",
+              "circle-color": "rgba(250, 204, 21, 0.24)",
               "circle-opacity": 1,
               "circle-radius": scaledCircleRadius(["interpolate", ["linear"], ["zoom"], 0, 15, 8, 18, 12, 20, 16, 22]),
               "circle-blur": 0.55,
@@ -9221,14 +9273,14 @@
             id: FROZEN_SHIELD_SELECTED_RING_LAYER,
             type: "circle",
             source: FROZEN_SHIELDS_SOURCE,
-            filter: ["==", ["id"], selectedFrozenShieldId || "__none__"],
+            filter: ["==", ["get", "id"], visibleFrozenShieldLocatorId || "__none__"],
             paint: {
               "circle-color": "rgba(255, 255, 255, 0.06)",
               "circle-opacity": 1,
               "circle-radius": scaledCircleRadius(["interpolate", ["linear"], ["zoom"], 0, 12.5, 8, 15, 12, 17, 16, 19]),
-              "circle-stroke-color": "#bfdbfe",
+              "circle-stroke-color": "#fde68a",
               "circle-stroke-width": 2.4,
-              "circle-stroke-opacity": 0.95,
+              "circle-stroke-opacity": 0.98,
             },
           });
         }
@@ -9388,7 +9440,7 @@
             openConfirmDialog("Delete this frozen shield?", () => deleteFrozenShield(shield.id));
           });
 
-          row.addEventListener("click", () => selectFrozenShield(shield.id, { focus: true }));
+          row.addEventListener("click", () => selectFrozenShield(shield.id, { focus: true, flashLocator: true }));
           row.append(swatch, meta, deleteBtn);
           frozenShieldsListEl.appendChild(row);
         }
@@ -9459,6 +9511,9 @@
         } else {
           localStorage.removeItem(FROZEN_SHIELD_SELECTED_KEY);
         }
+        if (!selectedFrozenShieldId) {
+          clearFrozenShieldLocator();
+        }
         updateFrozenShieldSelectionLayers();
         updateFrozenShieldsUi();
 
@@ -9474,6 +9529,9 @@
         const entry = frozenShields.find((item) => makeFrozenShieldId(item) === String(id));
         if (!entry) return;
         setFrozenShieldSelection(entry.id, { ...options, force: true });
+        if (options.flashLocator) {
+          showTemporaryFrozenShieldLocator(entry.id);
+        }
         setStatus(`Selected frozen shield "${entry.label}".`);
       }
 
