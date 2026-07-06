@@ -1563,6 +1563,11 @@
         border-bottom: 1px solid rgba(148, 163, 184, 0.14);
       }
 
+      .saved-highlight-item.is-selected {
+        background: rgba(37, 99, 235, 0.12);
+        box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.18);
+      }
+
       .saved-highlight-swatch {
         width: 34px;
         height: 18px;
@@ -3184,6 +3189,7 @@
       let capturedRoute = null;
       let capturedRouteRef = "";
       let savedHighlights = [];
+      let selectedSavedHighlightId = "";
       let liveHighlightExclusionSignatures = new Map();
       let liveHighlightErasedChains = new Map();
       let placeMarkers = [];
@@ -8442,6 +8448,87 @@
         };
       }
 
+      function findSavedHighlightIndex(id) {
+        const targetId = String(id || "");
+        if (!targetId) return -1;
+        return savedHighlights.findIndex((entry) => makeSavedHighlightId(entry) === targetId);
+      }
+
+      function getSavedHighlightById(id) {
+        const index = findSavedHighlightIndex(id);
+        return index >= 0 ? normalizeSavedHighlight(savedHighlights[index]) : null;
+      }
+
+      function getSavedHighlightLayerIds() {
+        return savedHighlights
+          .map((entry) => {
+            const saved = normalizeSavedHighlight(entry);
+            return saved ? `${makeSavedHighlightId(saved)}-line` : "";
+          })
+          .filter(Boolean);
+      }
+
+      function setSelectedSavedHighlight(id, { syncControls = true, announce = false } = {}) {
+        const nextId = String(id || "");
+        const selected = getSavedHighlightById(nextId);
+        selectedSavedHighlightId = selected ? nextId : "";
+        if (selected && syncControls) {
+          writeHighlightStyle(selected.style);
+        }
+        renderSavedHighlightsList();
+        if (announce && selected) {
+          const label = selected.ref || selected.routeRef || "Saved highlight";
+          setStatus(`Selected saved highlight "${label}". Adjust stroke color or width to edit it.`);
+        }
+      }
+
+      function updateSelectedSavedHighlightStyle(style) {
+        const index = findSavedHighlightIndex(selectedSavedHighlightId);
+        if (index < 0) return false;
+        const current = normalizeSavedHighlight(savedHighlights[index]);
+        if (!current) return false;
+        const next = {
+          ...current,
+          style: normalizeHighlightStyle(style),
+        };
+        savedHighlights[index] = next;
+        saveSavedHighlights();
+        syncSavedHighlightLayer(next);
+        renderSavedHighlightsList();
+        if (activePanelTab === "print") {
+          updatePrintPreview();
+        }
+        return true;
+      }
+
+      function handleSavedHighlightStyleControlChange() {
+        const style = readHighlightStyle();
+        if (selectedSavedHighlightId && updateSelectedSavedHighlightStyle(style)) {
+          if (map?.isStyleLoaded()) {
+            applyVisibilityToggles();
+            renderFrozenShields();
+            renderFrozenPlaces();
+            renderFrozenPois();
+          }
+          return;
+        }
+        if (map?.isStyleLoaded()) {
+          applyHighlight();
+        }
+      }
+
+      function handleSavedHighlightSelectionClick(event) {
+        if (!map?.isStyleLoaded?.()) return;
+        const layerIds = getSavedHighlightLayerIds();
+        if (!layerIds.length) return;
+        const hit = queryNearestRenderedFeature(event.point, layerIds, 10);
+        if (!hit) return;
+        const layerId = String(hit.layer?.id || "");
+        const selectedId = layerId.endsWith("-line") ? layerId.slice(0, -5) : layerId;
+        if (!selectedId) return;
+        setSelectedSavedHighlight(selectedId, { syncControls: true, announce: true });
+      }
+
       function pointInRect(point, rect) {
         return point.x >= rect.minX && point.x <= rect.maxX && point.y >= rect.minY && point.y <= rect.maxY;
       }
@@ -8643,8 +8730,13 @@
         }
 
         for (const entry of savedHighlights.slice().reverse()) {
+          const entryId = makeSavedHighlightId(entry);
           const row = document.createElement("div");
           row.className = "saved-highlight-item";
+          row.classList.toggle("is-selected", entryId === selectedSavedHighlightId);
+          row.addEventListener("click", () => {
+            setSelectedSavedHighlight(entryId, { syncControls: true, announce: true });
+          });
 
           const swatch = document.createElement("span");
           swatch.className = "saved-highlight-swatch";
@@ -8764,6 +8856,7 @@
 
         const savedRefLabel = String(entry.ref || entry.routeRef || highwayEl.value.trim()).trim();
         savedHighlights.push(entry);
+        selectedSavedHighlightId = "";
         saveSavedHighlights();
         clearCapturedRoute();
         highwayEl.value = savedRefLabel;
@@ -8815,6 +8908,9 @@
         const before = savedHighlights.length;
         savedHighlights = savedHighlights.filter((entry) => makeSavedHighlightId(entry) !== String(id));
         if (savedHighlights.length === before) return;
+        if (selectedSavedHighlightId === String(id)) {
+          selectedSavedHighlightId = "";
+        }
 
         saveSavedHighlights();
         if (map?.isStyleLoaded()) {
@@ -8829,6 +8925,7 @@
         setEraseMode(false);
         clearCapturedRoute();
         savedHighlights = [];
+        selectedSavedHighlightId = "";
         highwayEl.value = "";
         localStorage.removeItem(SAVED_HIGHLIGHTS_KEY);
         localStorage.removeItem(`${STORE_KEY}:highway`);
@@ -11205,6 +11302,7 @@
           strokeWeight: readProjectNumber(highlight.style?.strokeWeight, Number(strokeWeightEl.value) || 1, 0.1),
         };
         writeHighlightStyle(importedHighlightStyle);
+        selectedSavedHighlightId = "";
         capturedRoute = highlight.liveCapture && typeof highlight.liveCapture === "object" ? highlight.liveCapture : null;
         capturedRouteRef = String(highlight.liveCaptureRef || "");
         savedHighlights = Array.isArray(highlight.saved) ? highlight.saved.map(normalizeSavedHighlight).filter(Boolean) : [];
@@ -12288,6 +12386,7 @@
             markCaptureRouteViewportDirty();
           });
           map.on("click", handleShieldClick);
+          map.on("click", handleSavedHighlightSelectionClick);
           map.on("mousedown", (event) => {
             const vertexHit = queryNearestRenderedFeature(event.point, [DRAWN_SHAPES_EDIT_POINTS_LAYER], 16);
             if (vertexHit) {
@@ -12609,16 +12708,22 @@
       }
 
       highwayEl.addEventListener("input", () => updateCaptureRouteUi());
-      highwayEl.addEventListener("change", () => applyHighwaySearchHighlight({ commit: true }));
+      highwayEl.addEventListener("change", () => {
+        selectedSavedHighlightId = "";
+        renderSavedHighlightsList();
+        applyHighwaySearchHighlight({ commit: true });
+      });
       highwayEl.addEventListener("keydown", (event) => {
         if (event.key !== "Enter") return;
         event.preventDefault();
+        selectedSavedHighlightId = "";
+        renderSavedHighlightsList();
         runHighwayEnterFlow();
       });
-      colorEl.addEventListener("input", () => { if (map?.isStyleLoaded()) applyHighlight(); });
-      colorEl.addEventListener("change", () => { if (map?.isStyleLoaded()) applyHighlight(); });
-      strokeWeightEl.addEventListener("input", () => { if (map?.isStyleLoaded()) applyHighlight(); });
-      strokeWeightEl.addEventListener("change", () => { if (map?.isStyleLoaded()) applyHighlight(); });
+      colorEl.addEventListener("input", handleSavedHighlightStyleControlChange);
+      colorEl.addEventListener("change", handleSavedHighlightStyleControlChange);
+      strokeWeightEl.addEventListener("input", handleSavedHighlightStyleControlChange);
+      strokeWeightEl.addEventListener("change", handleSavedHighlightStyleControlChange);
       landColorEl.addEventListener("input", () => handleLandColorChange(landColorEl.value));
       landColorEl.addEventListener("change", () => handleLandColorChange(landColorEl.value));
       parkColorEl.addEventListener("input", () => handleLandColorChange(parkColorEl.value));
