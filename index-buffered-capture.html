@@ -931,6 +931,36 @@
         border: none !important;
       }
 
+      .place-style-button-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .place-style-button {
+        min-width: 42px;
+        height: 34px;
+        padding: 0 10px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1;
+      }
+
+      .place-style-button.active {
+        background: rgba(37, 99, 235, 0.18);
+        color: #1d4ed8;
+        border-color: rgba(59, 130, 246, 0.32);
+        box-shadow: 0 10px 20px rgba(37, 99, 235, 0.14);
+      }
+
+      .place-style-button[data-style="italic"] {
+        font-style: italic;
+      }
+
       .basemap-controls {
         position: relative;
         padding: 8px 0 10px;
@@ -2365,6 +2395,38 @@
                   <details id="place-name-tools" class="basemap-group">
                     <summary>Place names</summary>
                     <div class="basemap-group-body">
+                      <div class="basemap-row land-row street-style-row">
+                        <label>
+                          Place font
+                          <select id="place-name-font">
+                            <option value="inter">Inter</option>
+                            <option value="opensans">Open Sans</option>
+                            <option value="roboto">Roboto</option>
+                            <option value="lato">Lato</option>
+                            <option value="montserrat">Montserrat</option>
+                            <option value="poppins">Poppins</option>
+                            <option value="raleway">Raleway</option>
+                            <option value="barlow">Barlow</option>
+                            <option value="manrope">Manrope</option>
+                            <option value="sourcesanspro">Source Sans Pro</option>
+                            <option value="spectral">Spectral</option>
+                            <option value="ubuntu">Ubuntu</option>
+                          </select>
+                        </label>
+                        <label class="color-wrap">
+                          Place color
+                          <input id="place-name-color" type="color" value="#1f2937" />
+                        </label>
+                        <label>
+                          Size
+                          <input id="place-name-size" type="number" min="0.6" max="2" step="0.05" value="1" />
+                        </label>
+                      </div>
+                      <div class="place-style-button-row">
+                        <button id="toggle-place-all-caps" type="button" class="secondary place-style-button" data-style="all-caps" aria-pressed="false" title="All caps">TT</button>
+                        <button id="toggle-place-bold" type="button" class="secondary place-style-button" data-style="bold" aria-pressed="false" title="Bold">B</button>
+                        <button id="toggle-place-italic" type="button" class="secondary place-style-button" data-style="italic" aria-pressed="false" title="Italic">I</button>
+                      </div>
                       <div class="basemap-toggle-row">
                         <label class="toggle-check">
                           <input id="toggle-state-names" type="checkbox" />
@@ -2808,6 +2870,12 @@
       const togglePlaceMajorBtn = document.getElementById("toggle-place-major");
       const togglePlaceOtherBtn = document.getElementById("toggle-place-other");
       const toggleStateNamesBtn = document.getElementById("toggle-state-names");
+      const placeNameFontEl = document.getElementById("place-name-font");
+      const placeNameColorEl = document.getElementById("place-name-color");
+      const placeNameSizeEl = document.getElementById("place-name-size");
+      const togglePlaceAllCapsBtn = document.getElementById("toggle-place-all-caps");
+      const togglePlaceBoldBtn = document.getElementById("toggle-place-bold");
+      const togglePlaceItalicBtn = document.getElementById("toggle-place-italic");
       const searchLocationEl = document.getElementById("search-location");
       const colorEl = document.getElementById("color");
       const captureBtn = document.getElementById("capture");
@@ -2866,6 +2934,12 @@
       const PLACE_MAJOR_VISIBLE_KEY = `${STORE_KEY}:placeMajorVisible`;
       const PLACE_OTHER_VISIBLE_KEY = `${STORE_KEY}:placeOtherVisible`;
       const STATE_NAME_VISIBILITY_KEY = `${STORE_KEY}:stateNameVisibility`;
+      const PLACE_NAME_FONT_KEY = `${STORE_KEY}:placeNameFont`;
+      const PLACE_NAME_COLOR_KEY = `${STORE_KEY}:placeNameColor`;
+      const PLACE_NAME_SIZE_KEY = `${STORE_KEY}:placeNameSize`;
+      const PLACE_NAME_ALL_CAPS_KEY = `${STORE_KEY}:placeNameAllCaps`;
+      const PLACE_NAME_BOLD_KEY = `${STORE_KEY}:placeNameBold`;
+      const PLACE_NAME_ITALIC_KEY = `${STORE_KEY}:placeNameItalic`;
       const POWER_LINES_VISIBLE_KEY = `${STORE_KEY}:powerLinesVisible`;
       const POWER_LINE_COLOR_KEY = `${STORE_KEY}:powerLineColor`;
       const POWER_LINE_OUTLINE_COLOR_KEY = `${STORE_KEY}:powerLineOutlineColor`;
@@ -2934,6 +3008,12 @@
         PLACE_MAJOR_VISIBLE_KEY,
         PLACE_OTHER_VISIBLE_KEY,
         STATE_NAME_VISIBILITY_KEY,
+        PLACE_NAME_FONT_KEY,
+        PLACE_NAME_COLOR_KEY,
+        PLACE_NAME_SIZE_KEY,
+        PLACE_NAME_ALL_CAPS_KEY,
+        PLACE_NAME_BOLD_KEY,
+        PLACE_NAME_ITALIC_KEY,
         POWER_LINES_VISIBLE_KEY,
         POWER_LINE_COLOR_KEY,
         POWER_LINE_OUTLINE_COLOR_KEY,
@@ -2957,6 +3037,21 @@
       });
       const PROJECT_EXPORT_TYPE = "philly-highway-demo-project";
       const PROJECT_EXPORT_VERSION = 2;
+      const PLACE_NAME_FONT_OPTIONS = Object.freeze({
+        inter: { label: "Inter", regular: ["Inter Regular", "Arial Unicode MS Regular"], bold: ["Inter Bold", "Arial Unicode MS Regular"], italic: ["Inter Italic", "Arial Unicode MS Regular"], boldItalic: ["Inter Bold Italic", "Arial Unicode MS Regular"] },
+        opensans: { label: "Open Sans", regular: ["Open Sans Regular", "Arial Unicode MS Regular"], bold: ["Open Sans Bold", "Arial Unicode MS Regular"], italic: ["Open Sans Italic", "Arial Unicode MS Regular"], boldItalic: ["Open Sans Bold Italic", "Arial Unicode MS Regular"] },
+        roboto: { label: "Roboto", regular: ["Roboto Regular", "Arial Unicode MS Regular"], bold: ["Roboto Bold", "Arial Unicode MS Regular"], italic: ["Roboto Italic", "Arial Unicode MS Regular"], boldItalic: ["Roboto Bold Italic", "Arial Unicode MS Regular"] },
+        lato: { label: "Lato", regular: ["Lato Regular", "Arial Unicode MS Regular"], bold: ["Lato Bold", "Arial Unicode MS Regular"], italic: ["Lato Italic", "Arial Unicode MS Regular"], boldItalic: ["Lato Bold Italic", "Arial Unicode MS Regular"] },
+        montserrat: { label: "Montserrat", regular: ["Montserrat Regular", "Arial Unicode MS Regular"], bold: ["Montserrat Bold", "Arial Unicode MS Regular"], italic: ["Montserrat Italic", "Arial Unicode MS Regular"], boldItalic: ["Montserrat Bold Italic", "Arial Unicode MS Regular"] },
+        poppins: { label: "Poppins", regular: ["Poppins Regular", "Arial Unicode MS Regular"], bold: ["Poppins Bold", "Arial Unicode MS Regular"], italic: ["Poppins Italic", "Arial Unicode MS Regular"], boldItalic: ["Poppins Bold Italic", "Arial Unicode MS Regular"] },
+        raleway: { label: "Raleway", regular: ["Raleway Regular", "Arial Unicode MS Regular"], bold: ["Raleway Bold", "Arial Unicode MS Regular"], italic: ["Raleway Italic", "Arial Unicode MS Regular"], boldItalic: ["Raleway Bold Italic", "Arial Unicode MS Regular"] },
+        barlow: { label: "Barlow", regular: ["Barlow Regular", "Arial Unicode MS Regular"], bold: ["Barlow Bold", "Arial Unicode MS Regular"], italic: ["Barlow Italic", "Arial Unicode MS Regular"], boldItalic: ["Barlow Bold Italic", "Arial Unicode MS Regular"] },
+        manrope: { label: "Manrope", regular: ["Manrope Regular", "Arial Unicode MS Regular"], bold: ["Manrope Bold", "Arial Unicode MS Regular"], italic: ["Manrope Regular", "Arial Unicode MS Regular"], boldItalic: ["Manrope Bold", "Arial Unicode MS Regular"] },
+        sourcesanspro: { label: "Source Sans Pro", regular: ["Source Sans Pro Regular", "Arial Unicode MS Regular"], bold: ["Source Sans Pro Bold", "Arial Unicode MS Regular"], italic: ["Source Sans Pro Italic", "Arial Unicode MS Regular"], boldItalic: ["Source Sans Pro Bold Italic", "Arial Unicode MS Regular"] },
+        spectral: { label: "Spectral", regular: ["Spectral Regular", "Arial Unicode MS Regular"], bold: ["Spectral Bold", "Arial Unicode MS Regular"], italic: ["Spectral Italic", "Arial Unicode MS Regular"], boldItalic: ["Spectral Bold Italic", "Arial Unicode MS Regular"] },
+        ubuntu: { label: "Ubuntu", regular: ["Ubuntu Regular", "Arial Unicode MS Regular"], bold: ["Ubuntu Bold", "Arial Unicode MS Regular"], italic: ["Ubuntu Italic", "Arial Unicode MS Regular"], boldItalic: ["Ubuntu Bold Italic", "Arial Unicode MS Regular"] },
+      });
+      const DEFAULT_PLACE_NAME_FONT_KEY = "inter";
       const PLACE_MARKER_STYLE_DEFAULTS = Object.freeze({
         classic: "#ef4444",
         sunset: "#f97316",
@@ -3304,6 +3399,10 @@
         majorPlacesVisible ? "all" : "none"
       );
       let stateNamesVisible = localStorage.getItem(STATE_NAME_VISIBILITY_KEY) !== "false";
+      let placeNameFontKey = normalizePlaceNameFontKey(localStorage.getItem(PLACE_NAME_FONT_KEY));
+      let placeNameAllCaps = localStorage.getItem(PLACE_NAME_ALL_CAPS_KEY) === "true";
+      let placeNameBold = localStorage.getItem(PLACE_NAME_BOLD_KEY) === "true";
+      let placeNameItalic = localStorage.getItem(PLACE_NAME_ITALIC_KEY) === "true";
       let frozenShields = [];
       let frozenPlaces = [];
       let frozenPois = [];
@@ -3354,6 +3453,18 @@
       let exportDownloadToastTimeoutId = 0;
 
       toggleStateNamesBtn.checked = stateNamesVisible;
+      if (placeNameFontEl) {
+        placeNameFontEl.value = placeNameFontKey;
+      }
+      if (placeNameColorEl) {
+        placeNameColorEl.value = String(localStorage.getItem(PLACE_NAME_COLOR_KEY) || "#1f2937");
+      }
+      if (placeNameSizeEl) {
+        placeNameSizeEl.value = String(Math.max(0.6, Number(localStorage.getItem(PLACE_NAME_SIZE_KEY) || "1") || 1));
+      }
+      setPlaceStyleButtonState(togglePlaceAllCapsBtn, placeNameAllCaps);
+      setPlaceStyleButtonState(togglePlaceBoldBtn, placeNameBold);
+      setPlaceStyleButtonState(togglePlaceItalicBtn, placeNameItalic);
       if (frozenShieldScaleEl) {
         const allowed = new Set(["1", "1.15", "1.3", "1.5", "1.75"]);
         frozenShieldScaleEl.value = allowed.has(String(frozenShieldScale)) ? String(frozenShieldScale) : "1";
@@ -5404,7 +5515,82 @@
           majorPlacesVisible ? (otherPlacesVisible ? "all" : "major") : "none"
         );
         localStorage.setItem(STATE_NAME_VISIBILITY_KEY, String(stateNamesVisible));
+        localStorage.setItem(PLACE_NAME_FONT_KEY, placeNameFontKey);
+        localStorage.setItem(PLACE_NAME_COLOR_KEY, readPlaceNameStyle().color);
+        localStorage.setItem(PLACE_NAME_SIZE_KEY, String(readPlaceNameStyle().size));
+        localStorage.setItem(PLACE_NAME_ALL_CAPS_KEY, String(readPlaceNameStyle().allCaps));
+        localStorage.setItem(PLACE_NAME_BOLD_KEY, String(readPlaceNameStyle().bold));
+        localStorage.setItem(PLACE_NAME_ITALIC_KEY, String(readPlaceNameStyle().italic));
         saveStreetVisibilityState();
+      }
+
+      function normalizePlaceNameFontKey(value) {
+        const key = String(value || "").trim().toLowerCase();
+        return PLACE_NAME_FONT_OPTIONS[key] ? key : DEFAULT_PLACE_NAME_FONT_KEY;
+      }
+
+      function readPlaceNameStyle() {
+        const allCapsPressed = togglePlaceAllCapsBtn?.getAttribute("aria-pressed") === "true";
+        const boldPressed = togglePlaceBoldBtn?.getAttribute("aria-pressed") === "true";
+        const italicPressed = togglePlaceItalicBtn?.getAttribute("aria-pressed") === "true";
+        return {
+          color: String(placeNameColorEl?.value || "#1f2937"),
+          size: Math.max(0.6, Number(placeNameSizeEl?.value) || 1),
+          allCaps: allCapsPressed,
+          bold: boldPressed,
+          italic: italicPressed,
+        };
+      }
+
+      function getSelectedPlaceNameFontStack() {
+        const option = PLACE_NAME_FONT_OPTIONS[normalizePlaceNameFontKey(placeNameFontKey)] || PLACE_NAME_FONT_OPTIONS[DEFAULT_PLACE_NAME_FONT_KEY];
+        const bold = readPlaceNameStyle().bold;
+        const italic = readPlaceNameStyle().italic;
+        if (bold && italic) return (option.boldItalic || option.bold || option.italic || option.regular).slice();
+        if (bold) return (option.bold || option.regular).slice();
+        if (italic) return (option.italic || option.regular).slice();
+        return option.regular.slice();
+      }
+
+      function setPlaceStyleButtonState(button, pressed) {
+        if (!button) return;
+        button.setAttribute("aria-pressed", pressed ? "true" : "false");
+        button.classList.toggle("active", Boolean(pressed));
+      }
+
+      function applyPlaceNameFont() {
+        if (!map?.isStyleLoaded?.()) return 0;
+        const fontStack = getSelectedPlaceNameFontStack();
+        const style = readPlaceNameStyle();
+        const targets = getPlaceVisibilityTargets().all;
+        let changed = 0;
+        for (const layerId of targets) {
+          if (!hasStyleLayer(layerId)) continue;
+          try {
+            map.setLayoutProperty(layerId, "text-font", fontStack);
+            const baseLayer = getMapStyleLayers().find((entry) => entry?.id === layerId) || null;
+            const baseTextSize = baseLayer?.layout?.["text-size"];
+            map.setLayoutProperty(layerId, "text-size", scaleStyleValue(baseTextSize, style.size, 14));
+            map.setLayoutProperty(layerId, "text-transform", style.allCaps ? "uppercase" : "none");
+            map.setPaintProperty(layerId, "text-color", style.color);
+            changed += 1;
+          } catch {}
+        }
+        applyFrozenPlaceTypography();
+        renderFrozenPlaces();
+        return changed;
+      }
+
+      function applyFrozenPlaceTypography() {
+        if (!map || !map.isStyleLoaded()) return;
+        const style = readPlaceNameStyle();
+        const fontStack = getSelectedPlaceNameFontStack();
+        for (const layerId of getFrozenPlaceLayerIds()) {
+          const frozenLayerId = frozenPlaceSymbolLayerId(layerId);
+          if (!map.getLayer(frozenLayerId)) continue;
+          try { map.setLayoutProperty(frozenLayerId, "text-font", fontStack); } catch {}
+          try { map.setLayoutProperty(frozenLayerId, "text-transform", style.allCaps ? "uppercase" : "none"); } catch {}
+        }
       }
 
       function writeBasemapShades(nextShades = {}) {
@@ -5452,6 +5638,8 @@
           },
           visibility: readProjectVisibilityState(),
           styles: {
+            placeNameFont: placeNameFontKey,
+            placeNameStyle: readPlaceNameStyle(),
             trainLine: readTrainLineStyle(),
             powerLine: readPowerLineStyle(),
             frozenPlace: readFrozenPlaceStyle(),
@@ -10238,7 +10426,8 @@
                 ["get", "name"],
                 "Place",
               ],
-              "text-font": ["DIN Pro Medium", "Arial Unicode MS Regular"],
+              "text-font": getSelectedPlaceNameFontStack(),
+              "text-transform": readPlaceNameStyle().allCaps ? "uppercase" : "none",
               "text-size": 14,
               "text-line-height": 1.1,
               "text-max-width": 8,
@@ -10269,6 +10458,8 @@
         layout["icon-ignore-placement"] = true;
         delete layout["symbol-spacing"];
         delete layout["symbol-avoid-edges"];
+        layout["text-font"] = getSelectedPlaceNameFontStack();
+        layout["text-transform"] = readPlaceNameStyle().allCaps ? "uppercase" : "none";
 
         return {
           id: frozenPlaceSymbolLayerId(layerId),
@@ -11424,6 +11615,28 @@
         stateNamesVisible = readProjectBoolean(visibility.stateNamesVisible, stateNamesVisible);
 
         const styles = project.styles && typeof project.styles === "object" ? project.styles : {};
+        placeNameFontKey = normalizePlaceNameFontKey(styles.placeNameFont || placeNameFontKey);
+        if (placeNameFontEl) {
+          placeNameFontEl.value = placeNameFontKey;
+        }
+        if (placeNameColorEl) {
+          placeNameColorEl.value = String(styles.placeNameStyle?.color || placeNameColorEl.value || "#1f2937");
+        }
+        if (placeNameSizeEl) {
+          placeNameSizeEl.value = String(readProjectNumber(styles.placeNameStyle?.size, Number(placeNameSizeEl.value) || 1, 0.6));
+        }
+        setPlaceStyleButtonState(
+          togglePlaceAllCapsBtn,
+          readProjectBoolean(styles.placeNameStyle?.allCaps, readPlaceNameStyle().allCaps)
+        );
+        setPlaceStyleButtonState(
+          togglePlaceBoldBtn,
+          readProjectBoolean(styles.placeNameStyle?.bold, readPlaceNameStyle().bold)
+        );
+        setPlaceStyleButtonState(
+          togglePlaceItalicBtn,
+          readProjectBoolean(styles.placeNameStyle?.italic, readPlaceNameStyle().italic)
+        );
         writeTrainLineStyle({
           color: String(styles.trainLine?.color || trainLineColorEl.value || TRAIN_LINE_STYLE_DEFAULTS.color),
           outlineColor: String(styles.trainLine?.outlineColor || trainLineOutlineColorEl.value || TRAIN_LINE_STYLE_DEFAULTS.outlineColor),
@@ -11972,6 +12185,7 @@
         if (!map?.isStyleLoaded?.()) return false;
         applyBasemapShades();
         scheduleVisibilityApply();
+        applyPlaceNameFont();
         if (shouldHaveHighlightLayers()) {
           applyHighlight();
         }
@@ -12576,6 +12790,7 @@
             applyPresetStyleConfig();
             scheduleBasemapApply();
             scheduleVisibilityApply();
+            applyPlaceNameFont();
             if (powerLinesVisible) {
               ensurePowerLinesOverlay();
               queuePowerLinesRefresh();
@@ -12610,6 +12825,7 @@
           window.__dbgMap = map;
           updateZoomBadge();
           scheduleVisibilityApply();
+          applyPlaceNameFont();
           repaintSavedHighways();
           ensurePlaceMarkerDropTarget();
           ensureDistanceMeasureOverlay();
@@ -12844,6 +13060,32 @@
         updateVisibilityButtons();
         scheduleVisibilityApply();
       });
+      function handlePlaceNameStyleChange() {
+        placeNameFontKey = normalizePlaceNameFontKey(placeNameFontEl?.value || placeNameFontKey);
+        localStorage.setItem(PLACE_NAME_FONT_KEY, placeNameFontKey);
+        localStorage.setItem(PLACE_NAME_COLOR_KEY, readPlaceNameStyle().color);
+        localStorage.setItem(PLACE_NAME_SIZE_KEY, String(readPlaceNameStyle().size));
+        localStorage.setItem(PLACE_NAME_ALL_CAPS_KEY, String(readPlaceNameStyle().allCaps));
+        localStorage.setItem(PLACE_NAME_BOLD_KEY, String(readPlaceNameStyle().bold));
+        localStorage.setItem(PLACE_NAME_ITALIC_KEY, String(readPlaceNameStyle().italic));
+        if (map?.isStyleLoaded?.()) {
+          applyPlaceNameFont();
+        }
+      }
+      function togglePlaceStyleButton(button) {
+        if (!button) return;
+        const nextPressed = button.getAttribute("aria-pressed") !== "true";
+        setPlaceStyleButtonState(button, nextPressed);
+        handlePlaceNameStyleChange();
+      }
+      placeNameFontEl?.addEventListener("change", handlePlaceNameStyleChange);
+      placeNameColorEl?.addEventListener("input", handlePlaceNameStyleChange);
+      placeNameColorEl?.addEventListener("change", handlePlaceNameStyleChange);
+      placeNameSizeEl?.addEventListener("input", handlePlaceNameStyleChange);
+      placeNameSizeEl?.addEventListener("change", handlePlaceNameStyleChange);
+      togglePlaceAllCapsBtn?.addEventListener("click", () => togglePlaceStyleButton(togglePlaceAllCapsBtn));
+      togglePlaceBoldBtn?.addEventListener("click", () => togglePlaceStyleButton(togglePlaceBoldBtn));
+      togglePlaceItalicBtn?.addEventListener("click", () => togglePlaceStyleButton(togglePlaceItalicBtn));
       toggleBuildingsBtn?.addEventListener("change", () => {
         buildingsVisible = toggleBuildingsBtn.checked;
         localStorage.setItem(BUILDINGS_HIDDEN_KEY, String(!buildingsVisible));
