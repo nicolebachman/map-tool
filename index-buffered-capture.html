@@ -2536,6 +2536,13 @@
                                   <input id="building-color" type="color" value="#ededed" />
                                 </label>
                               </div>
+                              <div class="basemap-toggle-row">
+                                <button id="capture-buildings" type="button" class="secondary capture-fab">Capture visible buildings</button>
+                                <button id="clear-captured-buildings" type="button" class="secondary capture-fab">Clear capture</button>
+                              </div>
+                              <div class="frozen-shields-hint">
+                                Zoom to the building look you want, then capture the visible buildings so their shading stays visible when you zoom back out.
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -2708,7 +2715,11 @@
       const CAPTURED_ROUTE_KEY = `${STORE_KEY}:capturedRoute`;
       const CAPTURED_ROUTE_REF_KEY = `${STORE_KEY}:capturedRouteRef`;
       const SAVED_HIGHLIGHTS_KEY = `${STORE_KEY}:savedHighlights`;
+      const BUILDING_CAPTURE_KEY = `${STORE_KEY}:buildingCapture`;
       const BASEMAP_SHADES_KEY = `${STORE_KEY}:basemapShades`;
+      const CAPTURED_BUILDINGS_SOURCE = "captured-buildings";
+      const CAPTURED_BUILDINGS_FILL_LAYER = "captured-buildings-fill";
+      const CAPTURED_BUILDINGS_OUTLINE_LAYER = "captured-buildings-outline";
       const STYLE_PRESETS = {
         grey: {
           label: "Simple Grey",
@@ -2807,6 +2818,8 @@
       const parkColorEl = document.getElementById("park-color");
       const waterColorEl = document.getElementById("water-color");
       const buildingColorEl = document.getElementById("building-color");
+      const captureBuildingsBtn = document.getElementById("capture-buildings");
+      const clearCapturedBuildingsBtn = document.getElementById("clear-captured-buildings");
       const streetColorEl = document.getElementById("street-color");
       const minorStreetColorEl = document.getElementById("minor-street-color");
       const trunkHighwayColorEl = document.getElementById("trunk-highway-color");
@@ -2969,6 +2982,7 @@
         CAPTURED_ROUTE_KEY,
         CAPTURED_ROUTE_REF_KEY,
         SAVED_HIGHLIGHTS_KEY,
+        BUILDING_CAPTURE_KEY,
         PLACE_MARKERS_KEY,
         DRAWN_SHAPES_KEY,
         STREET_VISIBILITY_KEY,
@@ -3284,6 +3298,7 @@
       let capturedRoute = null;
       let capturedRouteRef = "";
       let savedHighlights = [];
+      let capturedBuildings = null;
       let selectedSavedHighlightId = "";
       let liveHighlightExclusionSignatures = new Map();
       let liveHighlightErasedChains = new Map();
@@ -3312,6 +3327,7 @@
       let streetLayerFilterDefaults = new Map();
       let builtLandFilterDefaults = new Map();
       let placeLabelPaintDefaults = new Map();
+      let placeLabelLayoutDefaults = new Map();
       let poiLabelPaintDefaults = new Map();
       let activePanelTab = localStorage.getItem(UI_TAB_KEY) || "editor";
       let panelMinimized = localStorage.getItem(PANEL_MINIMIZED_KEY) === "true";
@@ -5568,9 +5584,8 @@
           if (!hasStyleLayer(layerId)) continue;
           try {
             map.setLayoutProperty(layerId, "text-font", fontStack);
-            const baseLayer = getMapStyleLayers().find((entry) => entry?.id === layerId) || null;
-            const baseTextSize = baseLayer?.layout?.["text-size"];
-            map.setLayoutProperty(layerId, "text-size", scaleStyleValue(baseTextSize, style.size, 14));
+            const baseTextSize = getPlaceLayoutDefault(layerId, "text-size");
+            map.setLayoutProperty(layerId, "text-size", scaleTextSizeValue(baseTextSize, style.size, 14));
             map.setLayoutProperty(layerId, "text-transform", style.allCaps ? "uppercase" : "none");
             map.setPaintProperty(layerId, "text-color", style.color);
             changed += 1;
@@ -5578,6 +5593,7 @@
         }
         applyFrozenPlaceTypography();
         renderFrozenPlaces();
+        map.triggerRepaint();
         return changed;
       }
 
@@ -5588,8 +5604,12 @@
         for (const layerId of getFrozenPlaceLayerIds()) {
           const frozenLayerId = frozenPlaceSymbolLayerId(layerId);
           if (!map.getLayer(frozenLayerId)) continue;
+          const baseLayer = getFrozenPlaceBaseLayer(layerId);
+          const baseTextSize = baseLayer?.layout?.["text-size"];
           try { map.setLayoutProperty(frozenLayerId, "text-font", fontStack); } catch {}
+          try { map.setLayoutProperty(frozenLayerId, "text-size", scaleTextSizeValue(baseTextSize, style.size, 14)); } catch {}
           try { map.setLayoutProperty(frozenLayerId, "text-transform", style.allCaps ? "uppercase" : "none"); } catch {}
+          try { map.setPaintProperty(frozenLayerId, "text-color", style.color); } catch {}
         }
       }
 
@@ -5635,6 +5655,7 @@
             landMode,
             landPaletteSnapshot,
             shades: readBasemapShades(),
+            buildingCapture: capturedBuildings,
           },
           visibility: readProjectVisibilityState(),
           styles: {
@@ -6867,6 +6888,17 @@
         return value;
       }
 
+      function getPlaceLayoutDefault(layerId, property) {
+        const cacheKey = `${layerId}:${property}`;
+        if (placeLabelLayoutDefaults.has(cacheKey)) {
+          return placeLabelLayoutDefaults.get(cacheKey);
+        }
+        const layer = getMapStyleLayers().find((entry) => entry.id === layerId);
+        const value = layer?.layout?.[property] ?? null;
+        placeLabelLayoutDefaults.set(cacheKey, deepCloneStyleValue(value));
+        return value;
+      }
+
       function setPlaceLayerHidden(layerId, hidden) {
         if (!map || !hasStyleLayer(layerId)) return false;
         let changed = false;
@@ -7924,6 +7956,7 @@
         capturedRoute = null;
         capturedRouteRef = "";
         savedHighlights = [];
+        capturedBuildings = null;
         placeMarkers = [];
         drawnShapes = [];
         frozenShields = [];
@@ -7943,6 +7976,7 @@
         }
         if (map?.isStyleLoaded()) {
           clearHighlightLayers();
+          clearCapturedBuildingLayers();
           clearPowerLinesOverlay();
           updateCaptureRouteUi();
           renderSavedHighlightsList();
@@ -7982,6 +8016,7 @@
         applyRouteMarkerVisibility();
         applyPlaceNameVisibility();
         applyTrainMapVisibility();
+        renderCapturedBuildings();
       }
 
       function applyPoiToggleOnly() {
@@ -8478,6 +8513,12 @@
         }
         applyTrainLineStyle();
         applyBuiltLandVisibility();
+        if (map.getLayer(CAPTURED_BUILDINGS_FILL_LAYER)) {
+          try { map.setPaintProperty(CAPTURED_BUILDINGS_FILL_LAYER, "fill-color", shades.buildings); } catch {}
+        }
+        if (map.getLayer(CAPTURED_BUILDINGS_OUTLINE_LAYER)) {
+          try { map.setPaintProperty(CAPTURED_BUILDINGS_OUTLINE_LAYER, "line-color", shades.buildings); } catch {}
+        }
       }
 
       function getHighlightState() {
@@ -8619,6 +8660,151 @@
             coordinates: chain,
           },
         };
+      }
+
+      function normalizeCapturedBuildings(entry) {
+        if (!entry || typeof entry !== "object") return null;
+        const geojson = entry.geojson;
+        if (!geojson?.features?.length) return null;
+        const captureZoom = Number(entry.captureZoom);
+        return {
+          geojson,
+          captureZoom: Number.isFinite(captureZoom) ? captureZoom : 15,
+        };
+      }
+
+      function clearCapturedBuildingLayers() {
+        for (const layerId of [CAPTURED_BUILDINGS_FILL_LAYER, CAPTURED_BUILDINGS_OUTLINE_LAYER]) {
+          if (map?.getLayer?.(layerId)) map.removeLayer(layerId);
+        }
+        if (map?.getSource?.(CAPTURED_BUILDINGS_SOURCE)) {
+          map.removeSource(CAPTURED_BUILDINGS_SOURCE);
+        }
+      }
+
+      function renderCapturedBuildings() {
+        if (!map?.isStyleLoaded?.()) return;
+        clearCapturedBuildingLayers();
+        const captured = normalizeCapturedBuildings(capturedBuildings);
+        if (!captured || !buildingsVisible) return;
+        const insertBefore = map.getStyle().layers.find((l) => l.id.includes("road-label"))?.id;
+        map.addSource(CAPTURED_BUILDINGS_SOURCE, {
+          type: "geojson",
+          data: captured.geojson,
+        });
+        map.addLayer({
+          id: CAPTURED_BUILDINGS_FILL_LAYER,
+          type: "fill",
+          source: CAPTURED_BUILDINGS_SOURCE,
+          maxzoom: captured.captureZoom + 0.05,
+          paint: {
+            "fill-color": buildingColorEl.value,
+            "fill-opacity": 0.92,
+          },
+        }, insertBefore);
+        map.addLayer({
+          id: CAPTURED_BUILDINGS_OUTLINE_LAYER,
+          type: "line",
+          source: CAPTURED_BUILDINGS_SOURCE,
+          maxzoom: captured.captureZoom + 0.05,
+          paint: {
+            "line-color": buildingColorEl.value,
+            "line-opacity": 0.55,
+            "line-width": 0.6,
+          },
+        }, insertBefore);
+      }
+
+      function getBuildingCaptureLayerIds() {
+        const styleLayers = map?.getStyle?.()?.layers || [];
+        const candidateIds = new Set(BUILDING_LAYER_IDS);
+
+        for (const layer of styleLayers) {
+          if (!layer?.id) continue;
+          if (layer.type !== "fill" && layer.type !== "fill-extrusion") continue;
+          const id = String(layer.id || "").toLowerCase();
+          const sourceLayer = String(layer["source-layer"] || "").toLowerCase();
+          const metadata = layer.metadata || {};
+          const featureComponent = String(metadata["mapbox:featureComponent"] || "").toLowerCase();
+          const group = String(metadata["mapbox:group"] || "").toLowerCase();
+          const haystack = `${id} ${sourceLayer} ${featureComponent} ${group}`;
+
+          if (
+            isBuildingLayer(id) ||
+            /pier|dock|wharf|jetty|quay|marina|harbor|harbour|waterfront|land-structure/.test(haystack) ||
+            (sourceLayer === "structure" && /structure|pier|dock|wharf|jetty/.test(haystack))
+          ) {
+            candidateIds.add(layer.id);
+          }
+        }
+
+        return Array.from(candidateIds).filter((layerId) => {
+          const layer = styleLayers.find((entry) => entry.id === layerId);
+          return layer && (layer.type === "fill" || layer.type === "fill-extrusion");
+        });
+      }
+
+      function saveCapturedBuildings() {
+        if (capturedBuildings) {
+          localStorage.setItem(BUILDING_CAPTURE_KEY, JSON.stringify(capturedBuildings));
+        } else {
+          localStorage.removeItem(BUILDING_CAPTURE_KEY);
+        }
+      }
+
+      function clearCapturedBuildings({ silent = false } = {}) {
+        capturedBuildings = null;
+        saveCapturedBuildings();
+        clearCapturedBuildingLayers();
+        if (!silent) {
+          setStatus("Cleared captured building shading.");
+        }
+      }
+
+      function captureVisibleBuildings() {
+        if (!map?.isStyleLoaded?.()) {
+          setStatus("Load the map before capturing buildings.", true);
+          return;
+        }
+        const targetLayers = getBuildingCaptureLayerIds();
+        if (!targetLayers.length) {
+          setStatus("No building layers are available to capture here.", true);
+          return;
+        }
+        const canvas = map.getCanvas();
+        const bbox = [[0, 0], [canvas.width, canvas.height]];
+        const rendered = map.queryRenderedFeatures(bbox, { layers: targetLayers });
+        const features = [];
+        const seen = new Set();
+        for (const feature of rendered) {
+          const geometry = deepCloneStyleValue(feature?.geometry);
+          const type = String(geometry?.type || "");
+          if (type !== "Polygon" && type !== "MultiPolygon") continue;
+          const signature = feature.id != null ? String(feature.id) : JSON.stringify(geometry.coordinates || []);
+          if (seen.has(signature)) continue;
+          seen.add(signature);
+          features.push({
+            type: "Feature",
+            properties: {
+              id: signature,
+            },
+            geometry,
+          });
+        }
+        if (!features.length) {
+          setStatus("No visible buildings were found to capture at this zoom.", true);
+          return;
+        }
+        capturedBuildings = normalizeCapturedBuildings({
+          captureZoom: Number(map.getZoom()) || 15,
+          geojson: {
+            type: "FeatureCollection",
+            features,
+          },
+        });
+        saveCapturedBuildings();
+        renderCapturedBuildings();
+        setStatus(`Captured ${features.length} building${features.length === 1 ? "" : "s"} for lower zooms.`);
       }
 
       function normalizeSavedHighlight(entry) {
@@ -9296,6 +9482,35 @@
         if (baseValue == null || scale === 1) return deepCloneStyleValue(baseValue);
         if (typeof baseValue === "number") return baseValue * scale;
         return ["*", deepCloneStyleValue(baseValue), scale];
+      }
+
+      function scaleTextSizeValue(value, scale, fallback = null) {
+        const baseValue = value == null ? fallback : value;
+        if (baseValue == null || scale === 1) return deepCloneStyleValue(baseValue);
+        if (typeof baseValue === "number") return baseValue * scale;
+        if (!Array.isArray(baseValue) || !baseValue.length) {
+          return scaleStyleValue(baseValue, scale, fallback);
+        }
+
+        const op = baseValue[0];
+
+        if (op === "interpolate") {
+          const nextValue = deepCloneStyleValue(baseValue);
+          for (let index = 4; index < nextValue.length; index += 2) {
+            nextValue[index] = scaleTextSizeValue(nextValue[index], scale, fallback);
+          }
+          return nextValue;
+        }
+
+        if (op === "step") {
+          const nextValue = deepCloneStyleValue(baseValue);
+          for (let index = 2; index < nextValue.length; index += 2) {
+            nextValue[index] = scaleTextSizeValue(nextValue[index], scale, fallback);
+          }
+          return nextValue;
+        }
+
+        return scaleStyleValue(baseValue, scale, fallback);
       }
 
       function scaleStyleVectorValue(value, scale, fallback = null) {
@@ -11434,6 +11649,12 @@
           localStorage.removeItem(CAPTURED_ROUTE_REF_KEY);
         }
 
+        if (capturedBuildings) {
+          localStorage.setItem(BUILDING_CAPTURE_KEY, JSON.stringify(capturedBuildings));
+        } else {
+          localStorage.removeItem(BUILDING_CAPTURE_KEY);
+        }
+
         if (selectedFrozenShieldId) {
           localStorage.setItem(FROZEN_SHIELD_SELECTED_KEY, selectedFrozenShieldId);
         } else {
@@ -11497,6 +11718,7 @@
         }
         applyBasemapShades();
         scheduleVisibilityApply();
+        renderCapturedBuildings();
         await applyPendingProjectViewportAndWait();
         const shouldRunImportedHighlightCommit = pendingImportedHighlightCommit;
         pendingImportedHighlightCommit = false;
@@ -11569,6 +11791,8 @@
         landPaletteSnapshot = basemap.landPaletteSnapshot && typeof basemap.landPaletteSnapshot === "object"
           ? basemap.landPaletteSnapshot
           : null;
+        capturedBuildings = normalizeCapturedBuildings(basemap.buildingCapture);
+        saveCapturedBuildings();
         if (landMode !== "off") {
           applyFlattenedLandPalette(landColorEl.value);
         }
@@ -12185,6 +12409,7 @@
         if (!map?.isStyleLoaded?.()) return false;
         applyBasemapShades();
         scheduleVisibilityApply();
+        renderCapturedBuildings();
         applyPlaceNameFont();
         if (shouldHaveHighlightLayers()) {
           applyHighlight();
@@ -12201,6 +12426,7 @@
         await waitForNextFrame();
         await waitForMapIdle(700);
         if (!map?.isStyleLoaded?.()) return false;
+        renderCapturedBuildings();
         if (shouldHaveHighlightLayers()) {
           applyHighlight();
         }
@@ -12781,6 +13007,7 @@
             streetLayerFilterDefaults = new Map();
             builtLandFilterDefaults = new Map();
             placeLabelPaintDefaults = new Map();
+            placeLabelLayoutDefaults = new Map();
             poiLabelPaintDefaults = new Map();
             frozenShieldInteractionsBound = false;
             frozenPlaceInteractionsBound = false;
@@ -12790,6 +13017,7 @@
             applyPresetStyleConfig();
             scheduleBasemapApply();
             scheduleVisibilityApply();
+            renderCapturedBuildings();
             applyPlaceNameFont();
             if (powerLinesVisible) {
               ensurePowerLinesOverlay();
@@ -12825,6 +13053,7 @@
           window.__dbgMap = map;
           updateZoomBadge();
           scheduleVisibilityApply();
+          renderCapturedBuildings();
           applyPlaceNameFont();
           repaintSavedHighways();
           ensurePlaceMarkerDropTarget();
@@ -13022,6 +13251,8 @@
       highwayOutlineColorEl.addEventListener("change", () => { saveBasemapShades(); if (map?.isStyleLoaded()) applyBasemapShades(); });
       highwayOutlineWidthEl.addEventListener("input", () => { saveBasemapShades(); if (map?.isStyleLoaded()) applyBasemapShades(); });
       highwayOutlineWidthEl.addEventListener("change", () => { saveBasemapShades(); if (map?.isStyleLoaded()) applyBasemapShades(); });
+      captureBuildingsBtn?.addEventListener("click", captureVisibleBuildings);
+      clearCapturedBuildingsBtn?.addEventListener("click", () => clearCapturedBuildings());
       flattenLandBtn.addEventListener("click", () => {
         setLandMode(landMode === "flatten" ? "off" : "flatten");
       });
