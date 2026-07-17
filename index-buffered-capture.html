@@ -1193,6 +1193,16 @@
         overflow: visible;
       }
 
+      .place-marker-halo-overlay {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        overflow: visible;
+        z-index: 1;
+      }
+
       .place-marker-root.dot-marker {
         width: 36px;
         height: 36px;
@@ -1287,6 +1297,75 @@
         line-height: 1;
         display: grid;
         place-items: center;
+      }
+
+      .place-marker-halo-toggle {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .place-marker-halo-panel {
+        display: grid;
+        gap: 6px;
+        padding-top: 2px;
+      }
+
+      .place-marker-halo-panel[hidden] {
+        display: none !important;
+      }
+
+      .place-marker-halo-row {
+        display: grid;
+        grid-template-columns: 44px 1fr;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        color: #475569;
+      }
+
+      .place-marker-halo-row select {
+        min-height: 32px;
+        width: 100%;
+        padding: 6px 8px;
+        font-size: 11px;
+        border-radius: 10px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: rgba(248, 250, 252, 0.92);
+        color: #0f172a;
+      }
+
+      .place-marker-halo-style-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+      }
+
+      .place-marker-halo-style-grid input[type="color"],
+      .place-marker-halo-style-grid select {
+        min-height: 32px;
+        width: 100%;
+        padding: 6px 8px;
+        font-size: 11px;
+        border-radius: 10px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: rgba(248, 250, 252, 0.92);
+        color: #0f172a;
+      }
+
+      .place-marker-halo-style-grid input[type="color"] {
+        padding: 4px;
+      }
+
+      .place-marker-halo-label-toggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+        color: #475569;
+      }
+
+      .place-marker-halo-label-toggle input {
+        margin: 0;
       }
 
       .drawn-shape-editor-root {
@@ -2712,6 +2791,9 @@
       const DRAWN_SHAPES_EDIT_POINTS_SOURCE = "drawn-shapes-edit-points";
       const DRAWN_SHAPES_EDIT_POINTS_LAYER = "drawn-shapes-edit-points-layer";
       const DRAWN_SHAPES_EDIT_POINTS_HALO_LAYER = "drawn-shapes-edit-points-halo";
+      const PLACE_MARKER_HALO_SOURCE = "place-marker-halos";
+      const PLACE_MARKER_HALO_FILL_LAYER = "place-marker-halos-fill";
+      const PLACE_MARKER_HALO_LINE_LAYER = "place-marker-halos-line";
       const CAPTURED_ROUTE_KEY = `${STORE_KEY}:capturedRoute`;
       const CAPTURED_ROUTE_REF_KEY = `${STORE_KEY}:capturedRouteRef`;
       const SAVED_HIGHLIGHTS_KEY = `${STORE_KEY}:savedHighlights`;
@@ -2749,6 +2831,22 @@
         highwayOutline: "#f7f5f0",
         highwayOutlineWidth: "1",
       };
+      const PLACE_MARKER_HALO_RADIUS_OPTIONS = [
+        { value: "0", label: "Off" },
+        { value: "0.25", label: "0.25 mi" },
+        { value: "0.5", label: "0.5 mi" },
+        { value: "1", label: "1 mi" },
+        { value: "2", label: "2 mi" },
+        { value: "3", label: "3 mi" },
+        { value: "5", label: "5 mi" },
+        { value: "10", label: "10 mi" },
+      ];
+      const PLACE_MARKER_HALO_WIDTH_OPTIONS = [
+        { value: "1", label: "Thin" },
+        { value: "2", label: "Medium" },
+        { value: "3", label: "Bold" },
+        { value: "4", label: "Extra bold" },
+      ];
       const SIMPLE_GREY_BASEMAP_SHADES = {
         ...BASEMAP_DEFAULT_SHADES,
         land: "#efede8",
@@ -3305,6 +3403,9 @@
       let placeMarkers = [];
       let drawnShapes = [];
       let placeMarkerInstances = new Map();
+      let expandedPlaceMarkerHaloPanels = new Set();
+      let placeMarkerHaloSvg = null;
+      let haloLabelMeasureCanvas = null;
       let drawnShapeEditorMarker = null;
       let selectedPlaceMarkerId = "";
       let editingShapeId = "";
@@ -3611,11 +3712,21 @@
         const lng = Number(entry.lng);
         const lat = Number(entry.lat);
         if (!Number.isFinite(lng) || !Number.isFinite(lat)) return null;
+        const haloRadius1 = String(entry.haloRadius1 ?? "0");
+        const haloRadius2 = String(entry.haloRadius2 ?? "0");
+        const validHaloValues = new Set(PLACE_MARKER_HALO_RADIUS_OPTIONS.map((option) => option.value));
+        const haloWidth = String(entry.haloWidth ?? "2");
+        const validHaloWidthValues = new Set(PLACE_MARKER_HALO_WIDTH_OPTIONS.map((option) => option.value));
         return {
           id: String(entry.id || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`),
           styleKey: ["classic", "sunset", "solid"].includes(entry.styleKey) ? entry.styleKey : "classic",
           color: /^#[0-9a-f]{6}$/i.test(String(entry.color || "")) ? String(entry.color) : defaultPlaceMarkerColor(entry.styleKey),
           scale: PLACE_MARKER_SCALES.includes(String(entry.scale)) ? String(entry.scale) : "1",
+          haloRadius1: validHaloValues.has(haloRadius1) ? haloRadius1 : "0",
+          haloRadius2: validHaloValues.has(haloRadius2) ? haloRadius2 : "0",
+          haloColor: /^#[0-9a-f]{6}$/i.test(String(entry.haloColor || "")) ? String(entry.haloColor) : "#60a5fa",
+          haloWidth: validHaloWidthValues.has(haloWidth) ? haloWidth : "2",
+          haloLabelVisible: entry.haloLabelVisible !== false,
           lng,
           lat,
         };
@@ -3916,6 +4027,265 @@
         )).join("");
       }
 
+      function buildPlaceMarkerHaloRadiusOptions(selectedValue) {
+        return PLACE_MARKER_HALO_RADIUS_OPTIONS.map((option) => (
+          `<option value="${option.value}"${option.value === String(selectedValue) ? " selected" : ""}>${option.label}</option>`
+        )).join("");
+      }
+
+      function buildPlaceMarkerHaloWidthOptions(selectedValue) {
+        return PLACE_MARKER_HALO_WIDTH_OPTIONS.map((option) => (
+          `<option value="${option.value}"${option.value === String(selectedValue) ? " selected" : ""}>${option.label}</option>`
+        )).join("");
+      }
+
+      function formatHaloRadiusLabel(radiusMiles) {
+        const value = Number(radiusMiles);
+        if (!Number.isFinite(value) || value <= 0) return "";
+        if (Math.abs(value - Math.round(value)) < 0.0001) {
+          return `${Math.round(value)} mi`;
+        }
+        return `${value.toFixed(value < 1 ? 2 : 1).replace(/0+$/, "").replace(/\.$/, "")} mi`;
+      }
+
+      function haloLabelFontSize() {
+        return 12;
+      }
+
+      function measureHaloLabelWidth(text, fontSize = haloLabelFontSize()) {
+        if (!text) return 0;
+        if (!haloLabelMeasureCanvas) {
+          haloLabelMeasureCanvas = document.createElement("canvas");
+        }
+        const ctx = haloLabelMeasureCanvas.getContext("2d");
+        if (!ctx) return String(text).length * fontSize * 0.6;
+        ctx.font = `600 ${fontSize}px Inter, system-ui, sans-serif`;
+        return ctx.measureText(String(text)).width;
+      }
+
+      function destinationPoint(center, radiusMiles, bearingRadians) {
+        const lng = Number(center?.[0]);
+        const lat = Number(center?.[1]);
+        const radiusMeters = Number(radiusMiles) * 1609.344;
+        if (!Number.isFinite(lng) || !Number.isFinite(lat) || !Number.isFinite(radiusMeters) || radiusMeters <= 0) {
+          return null;
+        }
+        const earthRadiusMeters = 6371008.8;
+        const angularDistance = radiusMeters / earthRadiusMeters;
+        const latRad = lat * Math.PI / 180;
+        const lngRad = lng * Math.PI / 180;
+        const sinLat = Math.sin(latRad);
+        const cosLat = Math.cos(latRad);
+        const sinAd = Math.sin(angularDistance);
+        const cosAd = Math.cos(angularDistance);
+        const sinLat2 = sinLat * cosAd + cosLat * sinAd * Math.cos(bearingRadians);
+        const lat2 = Math.asin(Math.min(1, Math.max(-1, sinLat2)));
+        const y = Math.sin(bearingRadians) * sinAd * cosLat;
+        const x = cosAd - sinLat * Math.sin(lat2);
+        const lng2 = lngRad + Math.atan2(y, x);
+        return [
+          ((((lng2 * 180 / Math.PI) + 540) % 360) - 180),
+          lat2 * 180 / Math.PI,
+        ];
+      }
+
+      function placeMarkerHaloEntries() {
+        const halos = [];
+        for (const entry of placeMarkers) {
+          const marker = normalizePlaceMarker(entry);
+          if (!marker) continue;
+          for (const [index, radiusValue] of [marker.haloRadius1, marker.haloRadius2].entries()) {
+            const radiusMiles = Number(radiusValue);
+            if (!Number.isFinite(radiusMiles) || radiusMiles <= 0) continue;
+            halos.push({
+              markerId: marker.id,
+              center: [marker.lng, marker.lat],
+              radiusMiles,
+              haloIndex: index + 1,
+              haloColor: marker.haloColor,
+              haloWidth: Number(marker.haloWidth) || 2,
+              label: marker.haloLabelVisible ? formatHaloRadiusLabel(radiusMiles) : "",
+            });
+          }
+        }
+        return halos;
+      }
+
+      function haloPixelRadius(center, radiusMiles) {
+        if (!map) return 0;
+        const edgePoint = destinationPoint(center, radiusMiles, 0);
+        if (!edgePoint) return 0;
+        const projectedCenter = map.project(center);
+        const projectedEdge = map.project(edgePoint);
+        const radius = Math.hypot(projectedEdge.x - projectedCenter.x, projectedEdge.y - projectedCenter.y);
+        return Number.isFinite(radius) ? radius : 0;
+      }
+
+      function haloLabelAngles(haloIndex = 1) {
+        return haloIndex === 1
+          ? { start: 205, end: 292 }
+          : { start: 28, end: 115 };
+      }
+
+      function polarToCartesian(cx, cy, radius, angleDegrees) {
+        const angle = (angleDegrees - 90) * Math.PI / 180;
+        return {
+          x: cx + radius * Math.cos(angle),
+          y: cy + radius * Math.sin(angle),
+        };
+      }
+
+      function buildHaloArcPath(cx, cy, radius, startDegrees, endDegrees) {
+        const start = polarToCartesian(cx, cy, radius, startDegrees);
+        const end = polarToCartesian(cx, cy, radius, endDegrees);
+        const delta = ((endDegrees - startDegrees) % 360 + 360) % 360;
+        const largeArcFlag = delta > 180 ? 1 : 0;
+        const sweepFlag = 1;
+        return `M ${start.x.toFixed(3)} ${start.y.toFixed(3)} A ${radius.toFixed(3)} ${radius.toFixed(3)} 0 ${largeArcFlag} ${sweepFlag} ${end.x.toFixed(3)} ${end.y.toFixed(3)}`;
+      }
+
+      function haloLabelGapAngles(haloIndex = 1, radiusPx = 0, label = "", fontSize = haloLabelFontSize()) {
+        const base = haloLabelAngles(haloIndex);
+        const radius = Math.max(1, radiusPx);
+        const labelWidth = measureHaloLabelWidth(label, fontSize);
+        const paddingPx = Math.max(4, fontSize * 0.35);
+        const totalArcRadians = (labelWidth + (paddingPx * 2)) / radius;
+        const totalArcDegrees = Math.max(4, (totalArcRadians * 180) / Math.PI);
+        const halfArc = totalArcDegrees / 2;
+        const mid = (base.start + base.end) / 2;
+        return {
+          start: mid - halfArc,
+          end: mid + halfArc,
+        };
+      }
+
+      function buildHaloVisibleArcPath(cx, cy, radius, haloIndex = 1, label = "", fontSize = haloLabelFontSize()) {
+        const gap = haloLabelGapAngles(haloIndex, radius, label, fontSize);
+        return buildHaloArcPath(cx, cy, radius, gap.end, gap.start + 360);
+      }
+
+      function drawTextOnArc(ctx, text, cx, cy, radius, startDegrees, endDegrees, options = {}) {
+        if (!text) return;
+        const characters = Array.from(String(text));
+        if (!characters.length) return;
+        const fontSize = options.fontSize || 12;
+        const fontFamily = options.fontFamily || "Inter, system-ui, sans-serif";
+        const color = options.color || "#60a5fa";
+        const pixelRatio = options.pixelRatio || 1;
+        const start = startDegrees * Math.PI / 180;
+        const end = endDegrees * Math.PI / 180;
+        const direction = end >= start ? 1 : -1;
+        const totalAngle = Math.abs(end - start);
+
+        ctx.save();
+        ctx.font = `600 ${fontSize}px ${fontFamily}`;
+        const widths = characters.map((char) => ctx.measureText(char).width);
+        const letterSpacing = Math.max(0.25, fontSize * 0.02);
+        const totalWidth = widths.reduce((sum, width) => sum + width, 0) + Math.max(0, characters.length - 1) * letterSpacing;
+        const usableRadius = Math.max(radius, 1);
+        let startOffset = (totalAngle - (totalWidth / usableRadius)) / 2;
+        if (!Number.isFinite(startOffset)) startOffset = 0;
+        let angleCursor = start + direction * Math.max(0, startOffset);
+
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = color;
+        ctx.globalAlpha = 0.95;
+
+        for (let index = 0; index < characters.length; index += 1) {
+          const char = characters[index];
+          const charWidth = widths[index];
+          const advance = (charWidth / 2) / usableRadius;
+          angleCursor += direction * advance;
+          const x = cx + Math.cos(angleCursor) * usableRadius;
+          const y = cy + Math.sin(angleCursor) * usableRadius;
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.rotate(angleCursor + (direction > 0 ? Math.PI / 2 : -Math.PI / 2));
+          ctx.fillText(char, 0, 0);
+          ctx.restore();
+          angleCursor += direction * (advance + (letterSpacing / usableRadius));
+        }
+
+        ctx.restore();
+      }
+
+      function ensurePlaceMarkerHaloOverlay() {
+        if (!map) return null;
+        const container = map.getContainer?.();
+        if (!container) return null;
+        if (!placeMarkerHaloSvg || !placeMarkerHaloSvg.isConnected) {
+          placeMarkerHaloSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          placeMarkerHaloSvg.classList.add("place-marker-halo-overlay");
+          placeMarkerHaloSvg.setAttribute("aria-hidden", "true");
+          placeMarkerHaloSvg.setAttribute("shape-rendering", "geometricPrecision");
+          container.appendChild(placeMarkerHaloSvg);
+        }
+        return placeMarkerHaloSvg;
+      }
+
+      function renderPlaceMarkerHalos() {
+        if (!map) return;
+        const svg = ensurePlaceMarkerHaloOverlay();
+        if (!svg) return;
+        const container = map.getContainer?.();
+        const width = Math.max(1, Math.round(container?.clientWidth || 0));
+        const height = Math.max(1, Math.round(container?.clientHeight || 0));
+        svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+        svg.setAttribute("width", String(width));
+        svg.setAttribute("height", String(height));
+        svg.replaceChildren();
+
+        const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+        svg.appendChild(defs);
+
+        const halos = placeMarkerHaloEntries();
+        svg.style.display = halos.length ? "block" : "none";
+        for (const halo of halos) {
+          const projected = map.project(halo.center);
+          const radiusPx = haloPixelRadius(halo.center, halo.radiusMiles);
+          if (!Number.isFinite(projected.x) || !Number.isFinite(projected.y) || !(radiusPx > 0.25)) continue;
+          const labelFontSize = haloLabelFontSize();
+          const ringPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          ringPath.setAttribute(
+            "d",
+            halo.label
+              ? buildHaloVisibleArcPath(projected.x, projected.y, radiusPx, halo.haloIndex, halo.label, labelFontSize)
+              : buildHaloArcPath(projected.x, projected.y, radiusPx, 0, 359.999)
+          );
+          ringPath.setAttribute("fill", "none");
+          ringPath.setAttribute("stroke", halo.haloColor || "#60a5fa");
+          ringPath.setAttribute("stroke-width", String(Math.max(1, halo.haloWidth || 2)));
+          ringPath.setAttribute("stroke-opacity", "0.92");
+          ringPath.setAttribute("stroke-linecap", "round");
+          ringPath.setAttribute("stroke-linejoin", "round");
+          svg.appendChild(ringPath);
+
+          if (halo.label) {
+            const angles = haloLabelAngles(halo.haloIndex);
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            const pathId = `halo-label-${halo.markerId}-${halo.haloIndex}`;
+            path.setAttribute("id", pathId);
+            path.setAttribute("d", buildHaloArcPath(projected.x, projected.y, radiusPx, angles.start, angles.end));
+            path.setAttribute("fill", "none");
+            defs.appendChild(path);
+
+            const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            text.setAttribute("font-size", String(labelFontSize));
+            text.setAttribute("font-weight", "600");
+            text.setAttribute("fill", halo.haloColor || "#60a5fa");
+            text.setAttribute("opacity", "0.96");
+            const textPath = document.createElementNS("http://www.w3.org/2000/svg", "textPath");
+            textPath.setAttribute("href", `#${pathId}`);
+            textPath.setAttribute("startOffset", "50%");
+            textPath.setAttribute("text-anchor", "middle");
+            textPath.textContent = halo.label;
+            text.appendChild(textPath);
+            svg.appendChild(text);
+          }
+        }
+      }
+
       function updatePlaceMarkerEntry(id, updater) {
         const index = placeMarkers.findIndex((entry) => entry.id === String(id));
         if (index < 0) return;
@@ -3926,6 +4296,9 @@
         if (!next) return;
         placeMarkers[index] = next;
         savePlaceMarkers();
+        if (map?.isStyleLoaded?.()) {
+          renderPlaceMarkerHalos();
+        }
       }
 
       function deletePlaceMarker(id) {
@@ -3938,8 +4311,12 @@
         if (selectedPlaceMarkerId === markerId) {
           selectedPlaceMarkerId = "";
         }
+        expandedPlaceMarkerHaloPanels.delete(markerId);
         placeMarkers = placeMarkers.filter((entry) => entry.id !== markerId);
         savePlaceMarkers();
+        if (map?.isStyleLoaded?.()) {
+          renderPlaceMarkerHalos();
+        }
       }
 
       function stopMarkerControlEventPropagation(container) {
@@ -3996,6 +4373,7 @@
         const card = document.createElement("div");
         card.className = "place-marker-card";
         card.hidden = selectedPlaceMarkerId !== entry.id;
+        const haloPanelOpen = expandedPlaceMarkerHaloPanels.has(entry.id);
         card.innerHTML = `
           <button type="button" class="secondary place-marker-close" aria-label="Close marker controls">×</button>
           <div class="place-marker-controls">
@@ -4003,14 +4381,40 @@
             <input class="place-marker-color-input" type="color" value="${entry.color}" aria-label="Marker color" />
             <button type="button" class="secondary place-marker-delete">Delete</button>
           </div>
+          <button type="button" class="secondary place-marker-halo-toggle">${haloPanelOpen ? "Hide distance halo" : "Distance halo"}</button>
+          <div class="place-marker-halo-panel"${haloPanelOpen ? "" : " hidden"}>
+            <label class="place-marker-halo-row">
+              <span>Ring 1</span>
+              <select class="place-marker-halo1-select">${buildPlaceMarkerHaloRadiusOptions(entry.haloRadius1)}</select>
+            </label>
+            <label class="place-marker-halo-row">
+              <span>Ring 2</span>
+              <select class="place-marker-halo2-select">${buildPlaceMarkerHaloRadiusOptions(entry.haloRadius2)}</select>
+            </label>
+            <div class="place-marker-halo-style-grid">
+              <input class="place-marker-halo-color-input" type="color" value="${entry.haloColor}" aria-label="Halo color" />
+              <select class="place-marker-halo-width-select" aria-label="Halo thickness">${buildPlaceMarkerHaloWidthOptions(entry.haloWidth)}</select>
+            </div>
+            <label class="place-marker-halo-label-toggle">
+              <input class="place-marker-halo-label-visible" type="checkbox"${entry.haloLabelVisible ? " checked" : ""} />
+              <span>Show halo label</span>
+            </label>
+          </div>
         `;
 
         const closeBtn = card.querySelector(".place-marker-close");
         const scaleSelect = card.querySelector(".place-marker-scale-select");
         const colorInput = card.querySelector(".place-marker-color-input");
         const deleteBtn = card.querySelector(".place-marker-delete");
+        const haloToggleBtn = card.querySelector(".place-marker-halo-toggle");
+        const haloPanel = card.querySelector(".place-marker-halo-panel");
+        const halo1Select = card.querySelector(".place-marker-halo1-select");
+        const halo2Select = card.querySelector(".place-marker-halo2-select");
+        const haloColorInput = card.querySelector(".place-marker-halo-color-input");
+        const haloWidthSelect = card.querySelector(".place-marker-halo-width-select");
+        const haloLabelVisibleInput = card.querySelector(".place-marker-halo-label-visible");
 
-        [closeBtn, scaleSelect, colorInput, deleteBtn].forEach((node) => {
+        [closeBtn, scaleSelect, colorInput, deleteBtn, haloToggleBtn, haloPanel, halo1Select, halo2Select, haloColorInput, haloWidthSelect, haloLabelVisibleInput].forEach((node) => {
           if (node) stopMarkerControlEventPropagation(node);
         });
         stopMarkerControlEventPropagation(pinWrap);
@@ -4029,6 +4433,37 @@
         colorInput?.addEventListener("input", () => {
           updatePlaceMarkerEntry(entry.id, () => ({ color: colorInput.value }));
           pin.src = placeMarkerIconSvg(entry.styleKey, colorInput.value);
+        });
+        haloToggleBtn?.addEventListener("click", () => {
+          const nextOpen = haloPanel?.hidden;
+          if (nextOpen) {
+            expandedPlaceMarkerHaloPanels.add(entry.id);
+          } else {
+            expandedPlaceMarkerHaloPanels.delete(entry.id);
+          }
+          if (haloPanel) {
+            haloPanel.hidden = !nextOpen;
+          }
+          haloToggleBtn.textContent = nextOpen ? "Hide distance halo" : "Distance halo";
+        });
+        halo1Select?.addEventListener("change", () => {
+          updatePlaceMarkerEntry(entry.id, () => ({ haloRadius1: halo1Select.value }));
+          setStatus(halo1Select.value === "0" ? "Updated distance halo." : `Set halo ring 1 to ${halo1Select.value} miles.`);
+        });
+        halo2Select?.addEventListener("change", () => {
+          updatePlaceMarkerEntry(entry.id, () => ({ haloRadius2: halo2Select.value }));
+          setStatus(halo2Select.value === "0" ? "Updated distance halo." : `Set halo ring 2 to ${halo2Select.value} miles.`);
+        });
+        haloColorInput?.addEventListener("input", () => {
+          updatePlaceMarkerEntry(entry.id, () => ({ haloColor: haloColorInput.value }));
+        });
+        haloWidthSelect?.addEventListener("change", () => {
+          updatePlaceMarkerEntry(entry.id, () => ({ haloWidth: haloWidthSelect.value }));
+          setStatus(`Set halo thickness to ${haloWidthSelect.options[haloWidthSelect.selectedIndex]?.textContent || haloWidthSelect.value}.`);
+        });
+        haloLabelVisibleInput?.addEventListener("change", () => {
+          updatePlaceMarkerEntry(entry.id, () => ({ haloLabelVisible: haloLabelVisibleInput.checked }));
+          setStatus(haloLabelVisibleInput.checked ? "Halo label shown." : "Halo label hidden.");
         });
         deleteBtn?.addEventListener("click", () => deletePlaceMarker(entry.id));
 
@@ -4056,12 +4491,22 @@
           })
             .setLngLat([normalized.lng, normalized.lat])
             .addTo(map);
+          marker.on("drag", () => {
+            const lngLat = marker.getLngLat();
+            const markerEntry = placeMarkers.find((item) => String(item?.id) === normalized.id);
+            if (markerEntry) {
+              markerEntry.lng = lngLat.lng;
+              markerEntry.lat = lngLat.lat;
+            }
+            renderPlaceMarkerHalos();
+          });
           marker.on("dragend", () => {
             const lngLat = marker.getLngLat();
             updatePlaceMarkerEntry(normalized.id, () => ({
               lng: lngLat.lng,
               lat: lngLat.lat,
             }));
+            renderPlaceMarkerHalos();
           });
           placeMarkerInstances.set(normalized.id, { marker, card, root });
         }
@@ -4071,6 +4516,7 @@
           instance.marker.remove();
           placeMarkerInstances.delete(id);
         }
+        renderPlaceMarkerHalos();
       }
 
       function addPlaceMarkerAt(lngLat, styleKey = "classic") {
@@ -4079,6 +4525,11 @@
           styleKey,
           color: defaultPlaceMarkerColor(styleKey),
           scale: "1",
+          haloRadius1: "0",
+          haloRadius2: "0",
+          haloColor: "#60a5fa",
+          haloWidth: "2",
+          haloLabelVisible: true,
           lng: lngLat.lng,
           lat: lngLat.lat,
         });
@@ -5977,6 +6428,52 @@
             ? projectedY - (drawHeight / 2)
             : projectedY - drawHeight;
           ctx.drawImage(image, drawX, drawY, drawWidth, drawHeight);
+        }
+
+        for (const halo of placeMarkerHaloEntries()) {
+          const projected = map.project(halo.center);
+          const radiusCss = haloPixelRadius(halo.center, halo.radiusMiles);
+          if (!(radiusCss > 0.25)) continue;
+          const labelFontSize = haloLabelFontSize();
+          const centerX = projected.x * pixelScaleX;
+          const centerY = projected.y * pixelScaleY;
+          const radiusX = radiusCss * pixelScaleX;
+          const radiusY = radiusCss * pixelScaleY;
+          const avgRadius = radiusCss * ((pixelScaleX + pixelScaleY) / 2);
+          ctx.save();
+          ctx.beginPath();
+          if (halo.label) {
+            const gap = haloLabelGapAngles(halo.haloIndex, radiusCss, halo.label, labelFontSize);
+            const start = (gap.end - 90) * Math.PI / 180;
+            const end = (gap.start + 360 - 90) * Math.PI / 180;
+            ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, start, end);
+          } else {
+            ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2);
+          }
+          ctx.strokeStyle = halo.haloColor || "#60a5fa";
+          ctx.globalAlpha = 0.92;
+          ctx.lineWidth = Math.max(1, Number(halo.haloWidth) || 2) * ((pixelScaleX + pixelScaleY) / 2);
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+          ctx.stroke();
+          if (halo.label) {
+            const angles = haloLabelAngles(halo.haloIndex);
+            drawTextOnArc(
+              ctx,
+              halo.label,
+              centerX,
+              centerY,
+              avgRadius,
+              angles.start - 90,
+              angles.end - 90,
+              {
+                fontSize: labelFontSize * ((pixelScaleX + pixelScaleY) / 2),
+                color: halo.haloColor || "#60a5fa",
+                pixelRatio: ((pixelScaleX + pixelScaleY) / 2),
+              }
+            );
+          }
+          ctx.restore();
         }
 
         return compositeCanvas.toDataURL("image/png");
@@ -12860,6 +13357,7 @@
           map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
           window.__dbgMap = map;
           map.on("zoom", updateZoomBadge);
+          map.on("zoom", renderPlaceMarkerHalos);
           map.on("zoom", () => {
             if (frozenShields.length && !getFrozenShieldInteractiveLayerIds().length) {
               scheduleFrozenShieldsRefresh();
@@ -12872,6 +13370,8 @@
             }
           });
           map.on("move", updateZoomBadge);
+          map.on("move", renderPlaceMarkerHalos);
+          map.on("render", renderPlaceMarkerHalos);
           map.on("rotate", lockMapOrientation);
           map.on("pitch", lockMapOrientation);
           map.on("zoomstart", clearHoveredLiveShield);
